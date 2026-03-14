@@ -2,12 +2,13 @@
     font-family: 'Noto';
     src: url("../fonts/NotoSans-VariableFont_wdth\,wght.ttf");
 }
+
 :root {
-    --blue:rgb(0, 111, 230);
-    --link:#9ea8b3;
-    --link-hov:#3898ff;
-    --white:rgb(213, 213, 213);
-    --gray:rgb(87, 87, 87);
+    --blue: rgb(0, 111, 230);
+    --link: #9ea8b3;
+    --link-hov: #3898ff;
+    --white: rgb(213, 213, 213);
+    --gray: rgb(87, 87, 87);
 }
 
 * {
@@ -17,7 +18,7 @@
 }
 
 body {
-    font-family:monospace;
+    font-family: monospace;
     background-color: black;
     display: flex;
     flex-direction: column;
@@ -53,9 +54,10 @@ body {
     font-size: 0.8cqi;
 }
 
-.text.gray{
+.text.gray {
     color: var(--gray);
 }
+
 .text.white {
     color: var(--white);
 }
@@ -69,10 +71,10 @@ body {
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     text-align: center;
-    width:90%;
-    max-width:800px;
+    width: 90%;
+    max-width: 800px;
 
-    font-size:1em;
+    font-size: 1em;
 }
 
 .terminal-titlebar {
@@ -82,7 +84,7 @@ body {
     align-items: center;
     gap: 7px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color:gray;
+    color: gray;
 }
 
 .terminal-titlebar .dot {
@@ -105,8 +107,8 @@ body {
 
 .terminal-body {
     padding: 20px 24px;
-    overflow-y:auto;
-    
+    overflow-y: auto;
+
 }
 
 .terminal-left .terminal-body {
@@ -118,13 +120,18 @@ body {
 
 
 .about-grid {
-    font-size:0.8rem;
+    font-size: 0.8rem;
     display: grid;
     grid-template-columns: 96px minmax(0, 1fr);
-    align-items: center;
+    align-items: left;
     gap: 12px;
 }
 
+.about-grid.body {
+    height:100%;
+    max-height:400px;
+    overflow-y:scroll;
+}
 
 
 .about-avatar {
@@ -133,13 +140,14 @@ body {
     border-radius: 100%;
 }
 
-.about-title{
+.about-title {
     color: var(--blue);
     display: block;
-    width: 100%;
+
     text-align: right;
     align-self: start;
 }
+
 .about-content {
     color: #dddddd;
 }
@@ -193,20 +201,20 @@ a.button:hover {
 
 
 .buttons {
-    justify-content:center;
-    display:flex;
-    flex-direction:row;
-    gap:10px;
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
 }
 
 
 
 a.button {
-    text-decoration:none;
+    text-decoration: none;
     background-color: rgba(0, 0, 0, 0.285);
-    border-radius:10px;
-    padding:10px;
-    color:var(--link);
+    border-radius: 10px;
+    padding: 10px;
+    color: var(--link);
     border: 1px rgb(32, 32, 32) solid;
     display: inline-flex;
     align-items: center;
@@ -214,33 +222,44 @@ a.button {
     transition: transform 0.1s ease-out, color 0.1s ease-out;
 }
 
-a.button:hover{
-    color:var(--link-hov);
+a.button:hover {
+    color: var(--link-hov);
     background-color: rgba(1, 16, 101, 0.285);
     border-color: var(--link-hov);
     transform: translateY(-2px);
 }
 
 .pfp {
-    border-radius:100%;
+    border-radius: 100%;
 }
 
 
 @media screen and (max-width: 600px) {
-  .buttons {
-    flex-direction: column;
-  }
+    .buttons {
+        flex-direction: column;
+    }
 
-  .buttons a {
-    width: 100%;
-    margin-bottom: 10px;
-    margin-right: 0;
-    margin-left: 0;
-  }
+    .buttons a {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+        margin-left: 0;
+    }
 
-  a.button {
-    width:100%;
-    margin-top:10px;
-  }
-  
+    a.button {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .about-grid {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .about-avatar {
+        display:none;
+    }
+
+
 }
