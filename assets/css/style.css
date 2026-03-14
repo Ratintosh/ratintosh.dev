@@ -52,6 +52,7 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
+    font-size: 0.8cqi;
 }
 
 .text.gray{
@@ -70,6 +71,10 @@ body {
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     text-align: center;
+    width:90%;
+    max-width:800px;
+
+    font-size:1em;
 }
 
 .terminal-titlebar {
@@ -110,18 +115,19 @@ body {
     text-align: left;
 }
 
-.about {
-    width:50%;
-}
+
 
 
 
 .about-grid {
+    font-size:0.8rem;
     display: grid;
     grid-template-columns: 96px minmax(0, 1fr);
     align-items: center;
     gap: 12px;
 }
+
+
 
 .about-avatar {
     display: block;
@@ -138,7 +144,6 @@ body {
 }
 .about-content {
     color: #dddddd;
-    font-size: 0.9rem;
 }
 
 footer {
@@ -148,7 +153,7 @@ footer {
     padding: 14px;
     text-align: center;
     font-family: 'Noto';
-    font-size: 12px;
+    font-size: 0.6em;
     letter-spacing: 0.15em;
 }
 
@@ -196,6 +201,8 @@ a.button:hover {
     gap:10px;
 }
 
+
+
 a.button {
     text-decoration:none;
     background-color: rgba(0, 0, 0, 0.285);
@@ -220,3 +227,22 @@ a.button:hover{
     border-radius:100%;
 }
 
+
+@media screen and (max-width: 600px) {
+  .buttons {
+    flex-direction: column;
+  }
+
+  .buttons a {
+    width: 100%;
+    margin-bottom: 10px;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  a.button {
+    width:100%;
+    margin-top:10px;
+  }
+  
+}
