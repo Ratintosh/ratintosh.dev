@@ -3,6 +3,10 @@
 
 <head>
     <style>
+        @font-face {
+            font-family:'Noto';
+            src: url("NotoSans-VariableFont_wdth\,wght.ttf");
+        }
         * {
             margin: 0;
             padding: 0;
@@ -16,6 +20,23 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
+        }
+
+        #bg-video {
+            position: fixed;
+            top: -5%;
+            left: -5%;
+            width: 110%;
+            height: 110%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 1.5s ease-in, transform 0.1s ease-out;
+        }
+
+        #bg-video.loaded {
+            opacity: 1;
         }
 
         .text-gradient {
@@ -27,13 +48,75 @@
             display: inline-block;
         }
         .text {
-            color:green;
+            color: rgb(0, 89, 185);
+            text-align:center;
+        }
+
+        .terminal {
+            background-color: rgba(0, 0, 0, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .terminal-titlebar {
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .terminal-titlebar .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red    { background-color: #FF5F57; }
+        .dot-yellow { background-color: #FEBC2E; }
+        .dot-green  { background-color: #28C840; }
+
+        .terminal-body {
+            padding: 20px 24px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            font-family: 'Noto';
+            font-size: 12px;
+            letter-spacing: 0.15em;
+        }
+
+        footer span {
+            color:rgb(103, 139, 178);
+        }
+        a {
+            color:#0a7df8;
         }
     </style>
 </head>
 
 <body>
-    <pre class="text-gradient">
+    <video id="bg-video" autoplay muted loop playsinline>
+        <source src="stars.mp4" type="video/mp4">
+    </video>
+    <div class="terminal">
+        <div class="terminal-titlebar">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+        </div>
+        <div class="terminal-body">
+            <pre class="text-gradient">
 :::::::::      ::: ::::::::::: ::::::::::: ::::    ::: ::::::::::: ::::::::   ::::::::  :::    ::: 
 :+:    :+:   :+: :+:   :+:         :+:     :+:+:   :+:     :+:    :+:    :+: :+:    :+: :+:    :+: 
 +:+    +:+  +:+   +:+  +:+         +:+     :+:+:+  +:+     +:+    +:+    +:+ +:+        +:+    +:+ 
@@ -41,9 +124,25 @@
 +#+    +#+ +#+     +#+ +#+         +#+     +#+  +#+#+#     +#+    +#+    +#+        +#+ +#+    +#+ 
 #+#    #+# #+#     #+# #+#         #+#     #+#   #+#+#     #+#    #+#    #+# #+#    #+# #+#    #+# 
 ###    ### ###     ### ###     ########### ###    ####     ###     ########   ########  ###    ### 
-    </pre>
-    <br>
-    <pre class="text">======= Great things are coming soon. =======</pre>
+            </pre>
+            <br>
+            <pre class="text">======= Great things are coming soon. =======</pre>
+        </div>
+    </div>
+
+    <footer><span>&copy; 2026 Ratintosh<br>Background from <a href="https://mylivewallpapers.com/nature/space-live-wallpaper/">mylivewallpapers.com</a></span></footer>
+
+    <script>        const video = document.getElementById('bg-video');
+        video.addEventListener('canplaythrough', () => {
+            video.classList.add('loaded');
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const xShift = ((e.clientX / window.innerWidth) - 0.5) * 20;
+            const yShift = ((e.clientY / window.innerHeight) - 0.5) * 20;
+            video.style.transform = `translate(${-xShift}px, ${-yShift}px)`;
+        });
+    </script>
 </body>
 
 </html>
