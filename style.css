@@ -1,0 +1,173 @@
+@font-face {
+    font-family: 'Noto';
+    src: url("NotoSans-VariableFont_wdth\,wght.ttf");
+}
+:root {
+    --blue:rgb(0, 89, 185);
+    --link:#9ea8b3;
+    --link-hov:#3898ff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family:monospace;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#bg-video {
+    position: fixed;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    object-fit: cover;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 1.5s ease-in, transform 0.1s ease-out;
+}
+
+#bg-video.loaded {
+    opacity: 1;
+}
+
+.text-gradient {
+    color: #FFFFFF;
+    background-image: linear-gradient(180deg, #FFFFFF, #5CB6FF 29%, #000782 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.text {
+    color: var(--blue);
+    text-align: center;
+}
+
+.terminal {
+    background-color: rgba(0, 0, 0, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    text-align: center;
+}
+
+.terminal-titlebar {
+    background-color: rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.terminal-titlebar .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot-red {
+    background-color: #FF5F57;
+}
+
+.dot-yellow {
+    background-color: #FEBC2E;
+}
+
+.dot-green {
+    background-color: #28C840;
+}
+
+.terminal-body {
+    padding: 20px 24px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 14px;
+    text-align: center;
+    font-family: 'Noto';
+    font-size: 12px;
+    letter-spacing: 0.15em;
+}
+
+footer span {
+    color: rgb(103, 139, 178);
+}
+
+a {
+    color: #0a7df8;
+}
+
+.icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.icons a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.261);
+    text-decoration: none;
+    transition: transform 0.1s ease-out, color 0.1s ease-out;
+}
+
+.icons a:hover {
+    color: rgba(255, 255, 255, 0.616);
+    transform: translateY(-2px);
+
+}
+
+
+a.button:hover {
+    color: #b4d3f6;
+}
+
+
+.buttons {
+    justify-content:center;
+    display:flex;
+    flex-direction:row;
+    gap:10px;
+}
+
+.buttons a {
+    text-decoration:none;
+    background-color: rgba(0, 0, 0, 0.285);
+    border-radius:10px;
+    padding:10px;
+    color:var(--link);
+    border: 1px rgb(32, 32, 32) solid;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.1s ease-out, color 0.1s ease-out;
+}
+
+.buttons a:hover{
+    color:var(--link-hov);
+    background-color: rgba(1, 16, 101, 0.285);
+    border-color: var(--link-hov);
+    transform: translateY(-2px);
+}
