@@ -51,7 +51,7 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
-    font-size: 0.8cqi;
+    font-size: clamp(0.1rem, 1cqi, 0.6rem);
 }
 
 .text.gray {
