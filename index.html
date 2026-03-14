@@ -1,26 +1,38 @@
 <!Doctype HTML>
 <html>
-  <head>
+
+<head>
     <style>
-      body {
-        background-color:black;
-      }
-      .text-gradient {
-        color: #FFFFFF;
-        background-image: linear-gradient(180deg, #FFFFFF , #5CB6FF 29%, #000782 100%);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        display: inline-block;
-      }
-      pre {
-        width: 50%;
-        margin-left: auto;
-        margin-right: auto;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .text-gradient {
+            color: #FFFFFF;
+            background-image: linear-gradient(180deg, #FFFFFF, #5CB6FF 29%, #000782 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .text {
+            color:green;
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <pre class="text-gradient">
 :::::::::      ::: ::::::::::: ::::::::::: ::::    ::: ::::::::::: ::::::::   ::::::::  :::    ::: 
 :+:    :+:   :+: :+:   :+:         :+:     :+:+:   :+:     :+:    :+:    :+: :+:    :+: :+:    :+: 
@@ -30,5 +42,8 @@
 #+#    #+# #+#     #+# #+#         #+#     #+#   #+#+#     #+#    #+#    #+# #+#    #+# #+#    #+# 
 ###    ### ###     ### ###     ########### ###    ####     ###     ########   ########  ###    ### 
     </pre>
-  </body>
+    <br>
+    <pre class="text">======= Great things are coming soon. =======</pre>
+</body>
+
 </html>
