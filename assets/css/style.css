@@ -1,11 +1,15 @@
 @font-face {
     font-family: 'Noto';
-    src: url("NotoSans-VariableFont_wdth\,wght.ttf");
+    src: url("../fonts/NotoSans-VariableFont_wdth\,wght.ttf");
 }
 :root {
-    --blue:rgb(0, 89, 185);
+    --blue:rgb(0, 111, 230);
     --link:#9ea8b3;
     --link-hov:#3898ff;
+    --footer-safe-space: 110px;
+
+    --white:rgb(213, 213, 213);
+    --gray:rgb(87, 87, 87);
 }
 
 * {
@@ -50,9 +54,11 @@ body {
     display: inline-block;
 }
 
-.text {
-    color: var(--blue);
-    text-align: center;
+.text.gray{
+    color: var(--gray);
+}
+.text.white {
+    color: var(--white);
 }
 
 .terminal {
@@ -73,6 +79,7 @@ body {
     align-items: center;
     gap: 7px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color:gray;
 }
 
 .terminal-titlebar .dot {
@@ -95,6 +102,43 @@ body {
 
 .terminal-body {
     padding: 20px 24px;
+    overflow:scroll;
+    
+}
+
+.terminal-left .terminal-body {
+    text-align: left;
+}
+
+.about {
+    width:50%;
+}
+
+
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+
+.about-avatar {
+    display: block;
+    justify-self: end;
+    border-radius: 100%;
+}
+
+.about-title{
+    color: var(--blue);
+    display: block;
+    width: 100%;
+    text-align: right;
+    align-self: start;
+}
+.about-content {
+    color: #dddddd;
+    font-size: 0.9rem;
 }
 
 footer {
@@ -152,7 +196,7 @@ a.button:hover {
     gap:10px;
 }
 
-.buttons a {
+a.button {
     text-decoration:none;
     background-color: rgba(0, 0, 0, 0.285);
     border-radius:10px;
@@ -165,9 +209,14 @@ a.button:hover {
     transition: transform 0.1s ease-out, color 0.1s ease-out;
 }
 
-.buttons a:hover{
+a.button:hover{
     color:var(--link-hov);
     background-color: rgba(1, 16, 101, 0.285);
     border-color: var(--link-hov);
     transform: translateY(-2px);
 }
+
+.pfp {
+    border-radius:100%;
+}
+
