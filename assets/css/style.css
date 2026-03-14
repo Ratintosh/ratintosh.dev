@@ -6,8 +6,6 @@
     --blue:rgb(0, 111, 230);
     --link:#9ea8b3;
     --link-hov:#3898ff;
-    --footer-safe-space: 110px;
-
     --white:rgb(213, 213, 213);
     --gray:rgb(87, 87, 87);
 }
@@ -107,7 +105,6 @@ body {
 
 .terminal-body {
     padding: 20px 24px;
-    overflow:scroll;
     
 }
 
