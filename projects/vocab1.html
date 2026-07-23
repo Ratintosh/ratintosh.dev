@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wochenmarkt Vokabeln</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#28362c;
+    --bg-2:#324434;
+    --chalk:#f3ead9;
+    --chalk-dim:#cfc4ad;
+    --wood:#6b4a34;
+    --wood-dark:#573a29;
+    --der:#4f7ea8;
+    --die:#c1443a;
+    --das:#dba94a;
+    --none:#8faa8b;
+    --line: rgba(243,234,217,0.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.035), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255,255,255,0.03), transparent 45%),
+      var(--bg);
+    color:var(--chalk);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 16px 60px;
+  }
+  .wrap{ width:100%; max-width:640px; }
+
+  header{ text-align:center; margin-bottom:22px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:var(--chalk-dim);
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:52px;
+    margin:0;
+    line-height:1;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.15);
+  }
+  .sub{
+    font-size:13px;
+    color:var(--chalk-dim);
+    margin-top:6px;
+  }
+
+  /* stall sign category chips */
+  .aisle-row{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:4px 2px 14px;
+    margin-bottom:6px;
+    scrollbar-width:thin;
+  }
+  .aisle-row::-webkit-scrollbar{height:6px;}
+  .aisle-row::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .chip{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:.03em;
+    color:var(--chalk-dim);
+    background:rgba(0,0,0,0.15);
+    border:1px solid var(--line);
+    padding:7px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .chip:hover{ color:var(--chalk); border-color:var(--chalk-dim); }
+  .chip.active{
+    background:var(--chalk);
+    color:var(--bg);
+    border-color:var(--chalk);
+    font-weight:600;
+  }
+
+  .status-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--chalk-dim);
+    margin-bottom:14px;
+    padding:0 4px;
+  }
+  .status-row button{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  .status-row button:hover{ color:var(--chalk); border-color:var(--chalk-dim); }
+
+  /* the card - hanging market tag */
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    perspective:1400px;
+    margin-bottom:18px;
+  }
+  .string{
+    width:2px;
+    height:22px;
+    background:repeating-linear-gradient(180deg, var(--chalk-dim) 0 4px, transparent 4px 8px);
+    opacity:.5;
+  }
+  .card{
+    width:100%;
+    max-width:440px;
+    height:300px;
+    position:relative;
+    cursor:pointer;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.4,.2,.2,1);
+  }
+  .card.flipped{ transform:rotateY(180deg); }
+  .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border-radius:14px;
+    background:var(--wood);
+    border:1px solid rgba(0,0,0,0.25);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35), inset 0 0 0 6px rgba(0,0,0,0.08);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+    text-align:center;
+  }
+  .face::before{
+    content:"";
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:10px; height:10px; border-radius:50%;
+    background:var(--bg);
+    box-shadow: inset 0 2px 3px rgba(0,0,0,0.5);
+  }
+  .face.back{ transform:rotateY(180deg); background:var(--wood-dark); }
+
+  .tag-corner{
+    position:absolute; top:16px; left:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.05em;
+    padding:4px 9px;
+    border-radius:4px;
+    color:#1c241d;
+    text-transform:uppercase;
+  }
+  .type-corner{
+    position:absolute; top:16px; right:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    color:var(--chalk-dim);
+    text-transform:uppercase;
+  }
+
+  .word-front{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:56px;
+    color:var(--chalk);
+    line-height:1.05;
+  }
+  .hint{
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--chalk-dim);
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  .word-back{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:40px;
+    line-height:1.15;
+  }
+  .art-inline{
+    font-weight:700;
+  }
+  .plural-line{
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--chalk-dim);
+  }
+  .plural-line b{ color:var(--chalk); font-weight:600; }
+  .english-line{
+    margin-top:14px;
+    font-size:16px;
+    color:var(--chalk);
+    font-weight:500;
+    border-top:1px dashed var(--line);
+    padding-top:12px;
+    width:80%;
+  }
+
+  .tap-note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--chalk-dim);
+    font-family:'IBM Plex Mono', monospace;
+    margin-bottom:22px;
+    opacity:.8;
+  }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+  }
+  .ctrl-btn{
+    background:rgba(0,0,0,0.18);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:11px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .ctrl-btn:hover{ background:rgba(255,255,255,0.06); }
+  .ctrl-btn:active{ transform:scale(.96); }
+  .ctrl-btn.wide{ flex:1; max-width:150px; }
+  .ctrl-btn.know{ border-color:var(--der); color:var(--der); }
+  .ctrl-btn.know:hover{ background:rgba(79,126,168,0.15); }
+  .ctrl-btn.again{ border-color:var(--die); color:var(--die); }
+  .ctrl-btn.again:hover{ background:rgba(193,68,58,0.15); }
+
+  .legend{
+    margin-top:26px;
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--chalk-dim);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  @media (max-width:480px){
+    h1{ font-size:42px; }
+    .word-front{ font-size:42px; }
+    .card{ height:280px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{ transition:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Kapitel 4 · Lernwortschatz</p>
+    <h1>Wochenmarkt Vokabeln</h1>
+    <p class="sub">Tippe auf eine Karte, um Artikel, Plural und Bedeutung zu sehen.</p>
+  </header>
+
+  <div class="aisle-row" id="aisleRow"></div>
+
+  <div class="status-row">
+    <span id="counter">1 / 1</span>
+    <span id="knownCounter">Gelernt: 0</span>
+    <button id="resetBtn">Fortschritt zurücksetzen</button>
+  </div>
+
+  <div class="stage">
+    <div class="string"></div>
+    <div class="card" id="card">
+      <div class="face front">
+        <div class="tag-corner" id="frontTag" style="opacity:0"></div>
+        <div class="type-corner" id="frontType"></div>
+        <div class="word-front" id="frontWord"></div>
+        <div class="hint" id="frontHint"></div>
+      </div>
+      <div class="face back">
+        <div class="tag-corner" id="backTag"></div>
+        <div class="word-back" id="backWord"></div>
+        <div class="plural-line" id="backPlural"></div>
+        <div class="english-line" id="backEnglish"></div>
+      </div>
+    </div>
+  </div>
+  <p class="tap-note">Leertaste / Klick = umdrehen · ← → = wechseln</p>
+
+  <div class="controls">
+    <button class="ctrl-btn again wide" id="againBtn">Nochmal üben</button>
+    <button class="ctrl-btn" id="prevBtn">‹</button>
+    <button class="ctrl-btn" id="shuffleBtn">Mischen</button>
+    <button class="ctrl-btn" id="nextBtn">›</button>
+    <button class="ctrl-btn know wide" id="knowBtn">Kenn ich</button>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--der)"></i> der</span>
+    <span><i class="dot" style="background:var(--die)"></i> die</span>
+    <span><i class="dot" style="background:var(--das)"></i> das</span>
+    <span><i class="dot" style="background:var(--none)"></i> Ausdruck</span>
+  </div>
+</div>
+
+<script>
+const DATA = [
+// Obst
+{w:"Apfel",art:"der",pl:"Äpfel",en:"apple",cat:"Obst",type:"noun"},
+{w:"Banane",art:"die",pl:"Bananen",en:"banana",cat:"Obst",type:"noun"},
+{w:"Birne",art:"die",pl:"Birnen",en:"pear",cat:"Obst",type:"noun"},
+{w:"Obst",art:"das",pl:"nur Sg.",en:"fruit",cat:"Obst",type:"noun"},
+// Gemüse
+{w:"Gemüse",art:"das",pl:"nur Sg.",en:"vegetables",cat:"Gemüse",type:"noun"},
+{w:"Gurke",art:"die",pl:"Gurken",en:"cucumber",cat:"Gemüse",type:"noun"},
+{w:"Kartoffel",art:"die",pl:"Kartoffeln",en:"potato",cat:"Gemüse",type:"noun"},
+{w:"Salat",art:"der",pl:"Salate",en:"salad / lettuce",cat:"Gemüse",type:"noun"},
+{w:"Tomate",art:"die",pl:"Tomaten",en:"tomato",cat:"Gemüse",type:"noun"},
+{w:"Olive",art:"die",pl:"Oliven",en:"olive",cat:"Gemüse",type:"noun"},
+{w:"Zwiebel",art:"die",pl:"Zwiebeln",en:"onion",cat:"Gemüse",type:"noun"},
+// Backwaren
+{w:"Brot",art:"das",pl:"Brote",en:"bread",cat:"Backwaren",type:"noun"},
+{w:"Brötchen",art:"das",pl:"Brötchen",en:"bread roll",cat:"Backwaren",type:"noun"},
+{w:"Keks",art:"der",pl:"Kekse",en:"cookie",cat:"Backwaren",type:"noun"},
+{w:"Kuchen",art:"der",pl:"Kuchen",en:"cake",cat:"Backwaren",type:"noun"},
+// Fleischprodukte
+{w:"Fleisch",art:"das",pl:"nur Sg.",en:"meat",cat:"Fleischprodukte",type:"noun"},
+{w:"Hähnchen",art:"das",pl:"Hähnchen",en:"chicken",cat:"Fleischprodukte",type:"noun"},
+{w:"Schinken",art:"der",pl:"Schinken",en:"ham",cat:"Fleischprodukte",type:"noun"},
+{w:"Wurst",art:"die",pl:"Würste",en:"sausage",cat:"Fleischprodukte",type:"noun"},
+{w:"Würstchen",art:"das",pl:"Würstchen",en:"small sausage / hot dog",cat:"Fleischprodukte",type:"noun"},
+// Milchprodukte
+{w:"Butter",art:"die",pl:"nur Sg.",en:"butter",cat:"Milchprodukte",type:"noun"},
+{w:"Joghurt",art:"der/das",pl:"Joghurts",en:"yogurt",cat:"Milchprodukte",type:"noun"},
+{w:"Käse",art:"der",pl:"nur Sg.",en:"cheese",cat:"Milchprodukte",type:"noun"},
+{w:"Milch",art:"die",pl:"nur Sg.",en:"milk",cat:"Milchprodukte",type:"noun"},
+{w:"Sahne",art:"die",pl:"nur Sg.",en:"cream",cat:"Milchprodukte",type:"noun"},
+// andere Lebensmittel
+{w:"Pfeffer",art:"der",pl:"nur Sg.",en:"pepper",cat:"andere Lebensmittel",type:"noun"},
+{w:"Salz",art:"das",pl:"Salze",en:"salt",cat:"andere Lebensmittel",type:"noun"},
+{w:"Zucker",art:"der",pl:"nur Sg.",en:"sugar",cat:"andere Lebensmittel",type:"noun"},
+{w:"Essig",art:"der",pl:"Essige",en:"vinegar",cat:"andere Lebensmittel",type:"noun"},
+{w:"Öl",art:"das",pl:"Öle",en:"oil",cat:"andere Lebensmittel",type:"noun"},
+{w:"Nudel",art:"die",pl:"Nudeln",en:"noodle / pasta",cat:"andere Lebensmittel",type:"noun"},
+{w:"Reis",art:"der",pl:"nur Sg.",en:"rice",cat:"andere Lebensmittel",type:"noun"},
+{w:"Ei",art:"das",pl:"Eier",en:"egg",cat:"andere Lebensmittel",type:"noun"},
+{w:"Fisch",art:"der",pl:"Fische",en:"fish",cat:"andere Lebensmittel",type:"noun"},
+{w:"Schokolade",art:"die",pl:"Schokoladen",en:"chocolate",cat:"andere Lebensmittel",type:"noun"},
+{w:"Marmelade",art:"die",pl:"Marmeladen",en:"jam",cat:"andere Lebensmittel",type:"noun"},
+{w:"Müsli",art:"das",pl:"Müslis",en:"muesli",cat:"andere Lebensmittel",type:"noun"},
+// Getränke
+{w:"Getränk",art:"das",pl:"Getränke",en:"drink",cat:"Getränke",type:"noun"},
+{w:"Wasser",art:"das",pl:"Wasser",en:"water",cat:"Getränke",type:"noun"},
+{w:"Saft",art:"der",pl:"Säfte",en:"juice",cat:"Getränke",type:"noun"},
+{w:"Limonade",art:"die",pl:"Limonaden",en:"lemonade",cat:"Getränke",type:"noun"},
+{w:"Cola",art:"die",pl:"Colas",en:"cola",cat:"Getränke",type:"noun"},
+{w:"Kaffee",art:"der",pl:"Kaffees",en:"coffee",cat:"Getränke",type:"noun"},
+{w:"Tee",art:"der",pl:"Tees",en:"tea",cat:"Getränke",type:"noun"},
+// Geschäfte
+{w:"Bäckerei",art:"die",pl:"Bäckereien",en:"bakery",cat:"Geschäfte",type:"noun"},
+{w:"Markt",art:"der",pl:"Märkte",en:"market",cat:"Geschäfte",type:"noun"},
+{w:"Metzgerei",art:"die",pl:"Metzgereien",en:"butcher shop",cat:"Geschäfte",type:"noun"},
+{w:"Supermarkt",art:"der",pl:"Supermärkte",en:"supermarket",cat:"Geschäfte",type:"noun"},
+// Packungen und Maße
+{w:"Packung",art:"die",pl:"Packungen",en:"pack / package",cat:"Packungen & Maße",type:"noun"},
+{w:"Becher",art:"der",pl:"Becher",en:"cup / tub",cat:"Packungen & Maße",type:"noun"},
+{w:"Dose",art:"die",pl:"Dosen",en:"can",cat:"Packungen & Maße",type:"noun"},
+{w:"Stück",art:"das",pl:"Stücke",en:"piece",cat:"Packungen & Maße",type:"noun"},
+{w:"Tüte",art:"die",pl:"Tüten",en:"bag",cat:"Packungen & Maße",type:"noun"},
+{w:"Gramm",art:"das",pl:"Gramm",en:"gram",cat:"Packungen & Maße",type:"noun"},
+{w:"Kilo(gramm)",art:"das",pl:"Kilo(gramm)",en:"kilogram",cat:"Packungen & Maße",type:"noun"},
+{w:"Liter",art:"der",pl:"Liter",en:"liter",cat:"Packungen & Maße",type:"noun"},
+// beim Einkaufen
+{w:"kaufen",art:null,pl:null,en:"to buy",cat:"beim Einkaufen",type:"verb"},
+{w:"einkaufen",art:null,pl:null,en:"to shop",cat:"beim Einkaufen",type:"verb"},
+{w:"Einkaufswagen",art:"der",pl:"Einkaufswagen",en:"shopping cart",cat:"beim Einkaufen",type:"noun"},
+{w:"brauchen",art:null,pl:null,en:"to need",cat:"beim Einkaufen",type:"verb"},
+{w:"möchten, er möchte",art:null,pl:null,en:"would like",cat:"beim Einkaufen",type:"verb"},
+{w:"finden",art:null,pl:null,en:"to find",cat:"beim Einkaufen",type:"verb"},
+{w:"Entschuldigung, wo finde ich …?",art:null,pl:null,en:"Excuse me, where do I find…?",cat:"beim Einkaufen",type:"phrase"},
+{w:"Wo gibt es …?",art:null,pl:null,en:"Where is there…?",cat:"beim Einkaufen",type:"phrase"},
+// kosten
+{w:"kosten",art:null,pl:null,en:"to cost",cat:"kosten",type:"verb"},
+{w:"Preis",art:"der",pl:"Preise",en:"price",cat:"kosten",type:"noun"},
+{w:"Das macht … Euro, bitte.",art:null,pl:null,en:"That's … euros, please.",cat:"kosten",type:"phrase"},
+{w:"Kassenzettel",art:"der",pl:"Kassenzettel",en:"receipt",cat:"kosten",type:"noun"},
+{w:"teuer",art:null,pl:null,en:"expensive",cat:"kosten",type:"adj"},
+{w:"wechseln",art:null,pl:null,en:"to give change",cat:"kosten",type:"verb"},
+{w:"Können Sie wechseln, bitte?",art:null,pl:null,en:"Can you give change, please?",cat:"kosten",type:"phrase"},
+// beim Essen
+{w:"Guten Appetit!",art:null,pl:null,en:"Enjoy your meal!",cat:"beim Essen",type:"phrase"},
+{w:"Danke, gleichfalls.",art:null,pl:null,en:"Thanks, you too.",cat:"beim Essen",type:"phrase"},
+{w:"Essen",art:"das",pl:"nur Sg.",en:"food / meal",cat:"beim Essen",type:"noun"},
+{w:"essen, er isst",art:null,pl:null,en:"to eat",cat:"beim Essen",type:"verb"},
+{w:"trinken",art:null,pl:null,en:"to drink",cat:"beim Essen",type:"verb"},
+{w:"fertig",art:null,pl:null,en:"ready / finished",cat:"beim Essen",type:"adj"},
+{w:"mögen, er mag",art:null,pl:null,en:"to like",cat:"beim Essen",type:"verb"},
+{w:"nehmen, er nimmt",art:null,pl:null,en:"to take",cat:"beim Essen",type:"verb"},
+{w:"schmecken (Schmeckt's?)",art:null,pl:null,en:"to taste (Does it taste good?)",cat:"beim Essen",type:"verb"},
+{w:"lecker",art:null,pl:null,en:"tasty",cat:"beim Essen",type:"adj"},
+{w:"süß",art:null,pl:null,en:"sweet",cat:"beim Essen",type:"adj"},
+{w:"frisch",art:null,pl:null,en:"fresh",cat:"beim Essen",type:"adj"},
+// Mahlzeiten
+{w:"Frühstück",art:"das",pl:"Frühstücke",en:"breakfast",cat:"Mahlzeiten",type:"noun"},
+{w:"frühstücken",art:null,pl:null,en:"to eat breakfast",cat:"Mahlzeiten",type:"verb"},
+{w:"Mittagessen",art:"das",pl:"Mittagessen",en:"lunch",cat:"Mahlzeiten",type:"noun"},
+{w:"Abendessen",art:"das",pl:"Abendessen",en:"dinner",cat:"Mahlzeiten",type:"noun"},
+// Gerichte
+{w:"Gericht",art:"das",pl:"Gerichte",en:"dish",cat:"Gerichte",type:"noun"},
+{w:"Suppe",art:"die",pl:"Suppen",en:"soup",cat:"Gerichte",type:"noun"},
+{w:"Pizza",art:"die",pl:"Pizzas/Pizzen",en:"pizza",cat:"Gerichte",type:"noun"},
+{w:"Pommes frites",art:"die",pl:"nur Pl.",en:"french fries",cat:"Gerichte",type:"noun"},
+// Tageszeiten
+{w:"Morgen",art:"der",pl:"Morgen",en:"morning",cat:"Tageszeiten",type:"noun"},
+{w:"morgens",art:null,pl:null,en:"in the morning",cat:"Tageszeiten",type:"adv"},
+{w:"Mittag",art:"der",pl:"Mittage",en:"noon",cat:"Tageszeiten",type:"noun"},
+{w:"mittags",art:null,pl:null,en:"at noon",cat:"Tageszeiten",type:"adv"},
+{w:"Nachmittag",art:"der",pl:"Nachmittage",en:"afternoon",cat:"Tageszeiten",type:"noun"},
+{w:"nachmittags",art:null,pl:null,en:"in the afternoon",cat:"Tageszeiten",type:"adv"},
+{w:"Abend",art:"der",pl:"Abende",en:"evening",cat:"Tageszeiten",type:"noun"},
+{w:"abends",art:null,pl:null,en:"in the evening",cat:"Tageszeiten",type:"adv"},
+{w:"Nacht",art:"die",pl:"Nächte",en:"night",cat:"Tageszeiten",type:"noun"},
+{w:"nachts",art:null,pl:null,en:"at night",cat:"Tageszeiten",type:"adv"},
+// andere wichtige Wörter
+{w:"Einladung",art:"die",pl:"Einladungen",en:"invitation",cat:"andere Wörter",type:"noun"},
+{w:"nett",art:null,pl:null,en:"nice",cat:"andere Wörter",type:"adj"},
+{w:"gesund",art:null,pl:null,en:"healthy",cat:"andere Wörter",type:"adj"},
+{w:"waschen, er wäscht",art:null,pl:null,en:"to wash",cat:"andere Wörter",type:"verb"},
+{w:"schneiden",art:null,pl:null,en:"to cut",cat:"andere Wörter",type:"verb"},
+{w:"grillen",art:null,pl:null,en:"to grill",cat:"andere Wörter",type:"verb"},
+{w:"probieren",art:null,pl:null,en:"to try / taste",cat:"andere Wörter",type:"verb"},
+{w:"Kantine",art:"die",pl:"Kantinen",en:"canteen",cat:"andere Wörter",type:"noun"},
+{w:"wenig",art:null,pl:null,en:"little / few",cat:"andere Wörter",type:"adj"},
+{w:"vielleicht",art:null,pl:null,en:"maybe",cat:"andere Wörter",type:"adv"},
+{w:"wichtig",art:null,pl:null,en:"important",cat:"andere Wörter",type:"adj"},
+];
+
+const ART_COLOR = { "der":"var(--der)", "die":"var(--die)", "das":"var(--das)", "der/das":"var(--das)" };
+const TYPE_LABEL = { noun:"Nomen", verb:"Verb", phrase:"Ausdruck", adj:"Adjektiv", adv:"Adverb" };
+
+const categories = ["Alle", ...Array.from(new Set(DATA.map(d=>d.cat)))];
+let activeCat = "Alle";
+let deck = [];
+let idx = 0;
+let flipped = false;
+let known = new Set(); // in-memory only (resets on reload)
+
+function keyOf(item){ return item.w; }
+
+function buildDeck(){
+  deck = DATA.filter(d => activeCat==="Alle" || d.cat===activeCat);
+  idx = 0;
+  flipped = false;
+}
+
+function renderAisles(){
+  const row = document.getElementById("aisleRow");
+  row.innerHTML = "";
+  categories.forEach(cat=>{
+    const chip = document.createElement("div");
+    chip.className = "chip" + (cat===activeCat ? " active":"");
+    chip.textContent = cat;
+    chip.onclick = ()=>{ activeCat = cat; buildDeck(); renderAisles(); renderCard(); };
+    row.appendChild(chip);
+  });
+}
+
+function renderCard(){
+  const card = document.getElementById("card");
+  card.classList.remove("flipped");
+  flipped = false;
+
+  if(deck.length===0){
+    document.getElementById("frontWord").textContent = "Keine Karten";
+    return;
+  }
+  const item = deck[idx];
+
+  // front
+  document.getElementById("frontWord").textContent = item.type==="noun" ? item.w : item.w;
+  document.getElementById("frontHint").textContent =
+    item.type==="noun" ? "Welcher Artikel? Welcher Plural?" : ("(" + TYPE_LABEL[item.type] + " — Bedeutung?");
+  const ft = document.getElementById("frontTag");
+  ft.style.opacity = 0;
+  const fty = document.getElementById("frontType");
+  fty.textContent = TYPE_LABEL[item.type] || "";
+
+  // back
+  const bt = document.getElementById("backTag");
+  bt.style.background = "rgba(0,0,0,0.25)";
+  bt.style.color = "var(--chalk-dim)";
+  bt.textContent = TYPE_LABEL[item.type] || "";
+  bt.style.opacity = 1;
+
+  const backWordEl = document.getElementById("backWord");
+  if(item.art){
+    const color = ART_COLOR[item.art] || "var(--none)";
+    backWordEl.innerHTML = '<span class="art-inline" style="color:' + color + '">' + item.art + '</span> ' + item.w;
+  } else {
+    backWordEl.textContent = item.w;
+  }
+  document.getElementById("backPlural").innerHTML = item.pl ? ("Plural: <b>" + item.pl + "</b>") : "";
+  document.getElementById("backEnglish").textContent = item.en;
+
+  document.getElementById("counter").textContent = (idx+1) + " / " + deck.length;
+  document.getElementById("knownCounter").textContent = "Gelernt: " + known.size + " / " + DATA.length;
+}
+
+function flip(){
+  if(deck.length===0) return;
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next(){
+  if(deck.length===0) return;
+  idx = (idx+1) % deck.length;
+  renderCard();
+}
+function prev(){
+  if(deck.length===0) return;
+  idx = (idx-1+deck.length) % deck.length;
+  renderCard();
+}
+function shuffle(){
+  for(let i=deck.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+  idx = 0;
+  renderCard();
+}
+function markKnown(learned){
+  if(deck.length===0) return;
+  const item = deck[idx];
+  if(learned) known.add(keyOf(item));
+  else known.delete(keyOf(item));
+  next();
+}
+
+document.getElementById("card").addEventListener("click", flip);
+document.getElementById("nextBtn").addEventListener("click", next);
+document.getElementById("prevBtn").addEventListener("click", prev);
+document.getElementById("shuffleBtn").addEventListener("click", shuffle);
+document.getElementById("knowBtn").addEventListener("click", ()=>markKnown(true));
+document.getElementById("againBtn").addEventListener("click", ()=>markKnown(false));
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  known = new Set();
+  renderCard();
+});
+
+document.addEventListener("keydown",(e)=>{
+  if(e.code==="Space"){ e.preventDefault(); flip(); }
+  else if(e.code==="ArrowRight"){ next(); }
+  else if(e.code==="ArrowLeft"){ prev(); }
+});
+
+buildDeck();
+renderAisles();
+renderCard();
+</script>
+</body>
+</html>
