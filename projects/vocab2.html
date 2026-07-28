@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminplaner Vokabeln</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#e9e2d3;
+    --bg-2:#ddd4bf;
+    --ink:#293241;
+    --ink-dim:#5b6472;
+    --paper:#fbf7ee;
+    --paper-2:#f2ecdd;
+    --der:#2f6690;
+    --die:#c0483f;
+    --das:#c98a2c;
+    --none:#5a7a68;
+    --line: rgba(41,50,65,0.16);
+    --tape:#e4b7a8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 8%, rgba(255,255,255,0.4), transparent 40%),
+      radial-gradient(circle at 90% 92%, rgba(0,0,0,0.04), transparent 45%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 16px 60px;
+  }
+  .wrap{ width:100%; max-width:640px; }
+
+  header{ text-align:center; margin-bottom:22px; position:relative; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:var(--ink-dim);
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:52px;
+    margin:0;
+    line-height:1;
+    color:var(--ink);
+  }
+  .sub{
+    font-size:13px;
+    color:var(--ink-dim);
+    margin-top:6px;
+  }
+  .clock-badge{
+    position:absolute;
+    top:-6px; right:6px;
+    width:46px; height:46px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    display:none;
+  }
+  @media(min-width:520px){ .clock-badge{ display:block; } }
+
+  .aisle-row{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:4px 2px 14px;
+    margin-bottom:6px;
+    scrollbar-width:thin;
+  }
+  .aisle-row::-webkit-scrollbar{height:6px;}
+  .aisle-row::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .chip{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:.03em;
+    color:var(--ink-dim);
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:7px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .chip:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .chip.active{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+    font-weight:600;
+  }
+
+  .status-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-dim);
+    margin-bottom:14px;
+    padding:0 4px;
+  }
+  .status-row button{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  .status-row button:hover{ color:var(--ink); border-color:var(--ink-dim); }
+
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    perspective:1400px;
+    margin-bottom:18px;
+  }
+  .card{
+    width:100%;
+    max-width:440px;
+    height:300px;
+    position:relative;
+    cursor:pointer;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.4,.2,.2,1);
+  }
+  .card.flipped{ transform:rotateY(180deg); }
+  .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border-radius:6px;
+    background:var(--paper);
+    border:1px solid rgba(41,50,65,0.2);
+    box-shadow: 0 16px 34px rgba(41,50,65,0.18), inset 0 0 0 1px rgba(255,255,255,0.4);
+    background-image: repeating-linear-gradient(180deg, transparent 0 33px, var(--line) 33px 34px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+    text-align:center;
+  }
+  .face.back{ transform:rotateY(180deg); background:var(--paper-2); }
+  .tape{
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(-2deg);
+    width:70px; height:22px;
+    background:var(--tape);
+    opacity:.75;
+    border-radius:2px;
+  }
+
+  .tag-corner{
+    position:absolute; top:14px; left:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.06em;
+    padding:4px 9px;
+    border-radius:4px;
+    color:var(--paper);
+    text-transform:uppercase;
+  }
+  .type-corner{
+    position:absolute; top:14px; right:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+  }
+
+  .word-front{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:50px;
+    color:var(--ink);
+    line-height:1.1;
+  }
+  .hint{
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--ink-dim);
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  .word-back{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:38px;
+    line-height:1.15;
+    color:var(--ink);
+  }
+  .art-inline{ font-weight:700; }
+  .plural-line{
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--ink-dim);
+  }
+  .plural-line b{ color:var(--ink); font-weight:600; }
+  .english-line{
+    margin-top:14px;
+    font-size:16px;
+    color:var(--ink);
+    font-weight:500;
+    border-top:1px dashed var(--line);
+    padding-top:12px;
+    width:80%;
+  }
+
+  .tap-note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--ink-dim);
+    font-family:'IBM Plex Mono', monospace;
+    margin-bottom:22px;
+    opacity:.85;
+  }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+  }
+  .ctrl-btn{
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:11px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .ctrl-btn:hover{ background:var(--paper-2); }
+  .ctrl-btn:active{ transform:scale(.96); }
+  .ctrl-btn.wide{ flex:1; max-width:150px; }
+  .ctrl-btn.know{ border-color:var(--der); color:var(--der); }
+  .ctrl-btn.know:hover{ background:rgba(47,102,144,0.1); }
+  .ctrl-btn.again{ border-color:var(--die); color:var(--die); }
+  .ctrl-btn.again:hover{ background:rgba(192,72,63,0.1); }
+
+  .legend{
+    margin-top:26px;
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-dim);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  @media (max-width:480px){
+    h1{ font-size:42px; }
+    .word-front{ font-size:38px; }
+    .card{ height:280px; }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Kapitel 5 · Lernwortschatz</p>
+    <h1>Terminplaner Vokabeln</h1>
+    <p class="sub">Alltag, Uhrzeit, Familie &amp; Termine — tippe die Karte, um Artikel, Plural und Bedeutung zu sehen.</p>
+  </header>
+
+  <div class="aisle-row" id="aisleRow"></div>
+
+  <div class="status-row">
+    <span id="counter">1 / 1</span>
+    <span id="knownCounter">Gelernt: 0</span>
+    <button id="resetBtn">Fortschritt zurücksetzen</button>
+  </div>
+
+  <div class="stage">
+    <div class="card" id="card">
+      <div class="face front">
+        <div class="tape"></div>
+        <div class="tag-corner" id="frontTag" style="opacity:0"></div>
+        <div class="type-corner" id="frontType"></div>
+        <div class="word-front" id="frontWord"></div>
+        <div class="hint" id="frontHint"></div>
+      </div>
+      <div class="face back">
+        <div class="tag-corner" id="backTag"></div>
+        <div class="word-back" id="backWord"></div>
+        <div class="plural-line" id="backPlural"></div>
+        <div class="english-line" id="backEnglish"></div>
+      </div>
+    </div>
+  </div>
+  <p class="tap-note">Leertaste / Klick = umdrehen · ← → = wechseln</p>
+
+  <div class="controls">
+    <button class="ctrl-btn again wide" id="againBtn">Nochmal üben</button>
+    <button class="ctrl-btn" id="prevBtn">‹</button>
+    <button class="ctrl-btn" id="shuffleBtn">Mischen</button>
+    <button class="ctrl-btn" id="nextBtn">›</button>
+    <button class="ctrl-btn know wide" id="knowBtn">Kenn ich</button>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--der)"></i> der</span>
+    <span><i class="dot" style="background:var(--die)"></i> die</span>
+    <span><i class="dot" style="background:var(--das)"></i> das</span>
+    <span><i class="dot" style="background:var(--none)"></i> Ausdruck</span>
+  </div>
+</div>
+
+<script>
+const DATA = [
+// Alltag
+{w:"schlafen, er schläft",art:null,pl:null,en:"to sleep",cat:"Alltag",type:"verb"},
+{w:"duschen",art:null,pl:null,en:"to shower",cat:"Alltag",type:"verb"},
+{w:"besuchen",art:null,pl:null,en:"to visit",cat:"Alltag",type:"verb"},
+{w:"treffen, er trifft",art:null,pl:null,en:"to meet",cat:"Alltag",type:"verb"},
+{w:"Nachricht",art:"die",pl:"Nachrichten",en:"message / news",cat:"Alltag",type:"noun"},
+{w:"Uni",art:"die",pl:"Unis",en:"university (informal)",cat:"Alltag",type:"noun"},
+{w:"in die Uni/Schule fahren",art:null,pl:null,en:"to go to university/school",cat:"Alltag",type:"phrase"},
+{w:"Mensa",art:"die",pl:"Mensen",en:"university cafeteria",cat:"Alltag",type:"noun"},
+{w:"Bibliothek",art:"die",pl:"Bibliotheken",en:"library",cat:"Alltag",type:"noun"},
+{w:"Musikschule",art:"die",pl:"Musikschulen",en:"music school",cat:"Alltag",type:"noun"},
+{w:"Hausaufgabe",art:"die",pl:"Hausaufgaben",en:"homework",cat:"Alltag",type:"noun"},
+{w:"Zeitung",art:"die",pl:"Zeitungen",en:"newspaper",cat:"Alltag",type:"noun"},
+{w:"am Computer arbeiten",art:null,pl:null,en:"to work on the computer",cat:"Alltag",type:"phrase"},
+{w:"Homepage",art:"die",pl:"Homepages",en:"homepage / website",cat:"Alltag",type:"noun"},
+{w:"Stress",art:"der",pl:"nur Sg.",en:"stress",cat:"Alltag",type:"noun"},
+
+// Uhrzeit
+{w:"Uhr",art:"die",pl:"Uhren",en:"clock / watch",cat:"Uhrzeit",type:"noun"},
+{w:"Wie viel Uhr ist es?",art:null,pl:null,en:"What time is it?",cat:"Uhrzeit",type:"phrase"},
+{w:"Wie spät ist es?",art:null,pl:null,en:"What time is it?",cat:"Uhrzeit",type:"phrase"},
+{w:"Es ist vier Uhr.",art:null,pl:null,en:"It's four o'clock.",cat:"Uhrzeit",type:"phrase"},
+{w:"Es ist Viertel vor vier.",art:null,pl:null,en:"It's quarter to four.",cat:"Uhrzeit",type:"phrase"},
+{w:"Es ist Viertel nach vier.",art:null,pl:null,en:"It's quarter past four.",cat:"Uhrzeit",type:"phrase"},
+{w:"Es ist halb fünf.",art:null,pl:null,en:"It's half past four.",cat:"Uhrzeit",type:"phrase"},
+{w:"Es ist kurz vor vier.",art:null,pl:null,en:"It's shortly before four.",cat:"Uhrzeit",type:"phrase"},
+{w:"Es ist zehn nach vier.",art:null,pl:null,en:"It's ten past four.",cat:"Uhrzeit",type:"phrase"},
+{w:"um (um drei Uhr)",art:null,pl:null,en:"at (at three o'clock)",cat:"Uhrzeit",type:"phrase"},
+{w:"Sekunde",art:"die",pl:"Sekunden",en:"second",cat:"Uhrzeit",type:"noun"},
+{w:"Minute",art:"die",pl:"Minuten",en:"minute",cat:"Uhrzeit",type:"noun"},
+{w:"Stunde",art:"die",pl:"Stunden",en:"hour",cat:"Uhrzeit",type:"noun"},
+{w:"eine halbe Stunde",art:null,pl:null,en:"half an hour",cat:"Uhrzeit",type:"phrase"},
+{w:"Verspätung",art:"die",pl:"Verspätungen",en:"delay",cat:"Uhrzeit",type:"noun"},
+{w:"pünktlich",art:null,pl:null,en:"punctual / on time",cat:"Uhrzeit",type:"adj"},
+{w:"zu spät kommen",art:null,pl:null,en:"to be late (arrive late)",cat:"Uhrzeit",type:"phrase"},
+
+// Familie
+{w:"Familie",art:"die",pl:"Familien",en:"family",cat:"Familie",type:"noun"},
+{w:"Verwandte",art:"der/die",pl:"Verwandten",en:"relative",cat:"Familie",type:"noun"},
+{w:"Baby",art:"das",pl:"Babys",en:"baby",cat:"Familie",type:"noun"},
+{w:"Kind",art:"das",pl:"Kinder",en:"child",cat:"Familie",type:"noun"},
+{w:"Junge",art:"der",pl:"Jungen",en:"boy",cat:"Familie",type:"noun"},
+{w:"Mädchen",art:"das",pl:"Mädchen",en:"girl",cat:"Familie",type:"noun"},
+{w:"Sohn",art:"der",pl:"Söhne",en:"son",cat:"Familie",type:"noun"},
+{w:"Tochter",art:"die",pl:"Töchter",en:"daughter",cat:"Familie",type:"noun"},
+{w:"Mutter",art:"die",pl:"Mütter",en:"mother",cat:"Familie",type:"noun"},
+{w:"Vater",art:"der",pl:"Väter",en:"father",cat:"Familie",type:"noun"},
+{w:"Eltern",art:"die",pl:"nur Pl.",en:"parents",cat:"Familie",type:"noun"},
+{w:"Bruder",art:"der",pl:"Brüder",en:"brother",cat:"Familie",type:"noun"},
+{w:"Schwester",art:"die",pl:"Schwestern",en:"sister",cat:"Familie",type:"noun"},
+{w:"Geschwister",art:"die",pl:"nur Pl.",en:"siblings",cat:"Familie",type:"noun"},
+{w:"Großmutter",art:"die",pl:"Großmütter",en:"grandmother",cat:"Familie",type:"noun"},
+{w:"Oma",art:"die",pl:"Omas",en:"grandma",cat:"Familie",type:"noun"},
+{w:"Großvater",art:"der",pl:"Großväter",en:"grandfather",cat:"Familie",type:"noun"},
+{w:"Opa",art:"der",pl:"Opas",en:"grandpa",cat:"Familie",type:"noun"},
+{w:"Großeltern",art:"die",pl:"nur Pl.",en:"grandparents",cat:"Familie",type:"noun"},
+{w:"Mann (mein Mann)",art:"der",pl:"Männer",en:"husband / man",cat:"Familie",type:"noun"},
+{w:"Frau (meine Frau)",art:"die",pl:"Frauen",en:"wife / woman",cat:"Familie",type:"noun"},
+{w:"ledig",art:null,pl:null,en:"single (unmarried)",cat:"Familie",type:"adj"},
+{w:"verheiratet",art:null,pl:null,en:"married",cat:"Familie",type:"adj"},
+
+// Termine und Verabredungen
+{w:"Zeit",art:"die",pl:"Zeiten",en:"time",cat:"Termine & Verabredungen",type:"noun"},
+{w:"Hast du morgen Zeit?",art:null,pl:null,en:"Do you have time tomorrow?",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"telefonieren",art:null,pl:null,en:"to phone / call",cat:"Termine & Verabredungen",type:"verb"},
+{w:"Auf Wiederhören.",art:null,pl:null,en:"Goodbye (on the phone).",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"am (am Montag)",art:null,pl:null,en:"on (on Monday)",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"von … bis (von Montag bis Freitag)",art:null,pl:null,en:"from … to (from Monday to Friday)",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"können, er kann",art:null,pl:null,en:"can / to be able to",cat:"Termine & Verabredungen",type:"verb"},
+{w:"müssen, er muss",art:null,pl:null,en:"must / to have to",cat:"Termine & Verabredungen",type:"verb"},
+{w:"wollen, er will",art:null,pl:null,en:"to want",cat:"Termine & Verabredungen",type:"verb"},
+{w:"Party",art:"die",pl:"Partys",en:"party",cat:"Termine & Verabredungen",type:"noun"},
+{w:"eine Party machen",art:null,pl:null,en:"to throw a party",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"Bar",art:"die",pl:"Bars",en:"bar",cat:"Termine & Verabredungen",type:"noun"},
+{w:"sitzen",art:null,pl:null,en:"to sit",cat:"Termine & Verabredungen",type:"verb"},
+{w:"Kalender",art:"der",pl:"Kalender",en:"calendar",cat:"Termine & Verabredungen",type:"noun"},
+{w:"Besprechung",art:"die",pl:"Besprechungen",en:"meeting",cat:"Termine & Verabredungen",type:"noun"},
+{w:"Was kann ich für Sie tun?",art:null,pl:null,en:"What can I do for you?",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"Ich hätte gern einen Termin.",art:null,pl:null,en:"I'd like an appointment.",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"Haben Sie am … einen Termin frei?",art:null,pl:null,en:"Do you have an appointment free on…?",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"Geht es am … um …?",art:null,pl:null,en:"Does … at … work for you?",cat:"Termine & Verabredungen",type:"phrase"},
+{w:"Nein, das geht leider nicht.",art:null,pl:null,en:"No, unfortunately that doesn't work.",cat:"Termine & Verabredungen",type:"phrase"},
+
+// andere wichtige Wörter und Wendungen
+{w:"krank",art:null,pl:null,en:"sick / ill",cat:"andere Wörter",type:"adj"},
+{w:"Sport",art:"der",pl:"nur Sg.",en:"sport",cat:"andere Wörter",type:"noun"},
+{w:"Ball",art:"der",pl:"Bälle",en:"ball",cat:"andere Wörter",type:"noun"},
+{w:"Motorrad",art:"das",pl:"Motorräder",en:"motorcycle",cat:"andere Wörter",type:"noun"},
+{w:"Geige",art:"die",pl:"Geigen",en:"violin",cat:"andere Wörter",type:"noun"},
+{w:"Geige spielen",art:null,pl:null,en:"to play the violin",cat:"andere Wörter",type:"phrase"},
+{w:"Saxofon",art:"das",pl:"Saxofone",en:"saxophone",cat:"andere Wörter",type:"noun"},
+{w:"Trompete",art:"die",pl:"Trompeten",en:"trumpet",cat:"andere Wörter",type:"noun"},
+{w:"Hund",art:"der",pl:"Hunde",en:"dog",cat:"andere Wörter",type:"noun"},
+{w:"süß (Euer Hund ist so süß.)",art:null,pl:null,en:"cute (Your dog is so cute.)",cat:"andere Wörter",type:"adj"},
+{w:"Idee",art:"die",pl:"Ideen",en:"idea",cat:"andere Wörter",type:"noun"},
+{w:"Gute Idee!",art:null,pl:null,en:"Good idea!",cat:"andere Wörter",type:"phrase"},
+{w:"liebe Grüße",art:null,pl:null,en:"best regards",cat:"andere Wörter",type:"phrase"},
+{w:"willkommen",art:null,pl:null,en:"welcome",cat:"andere Wörter",type:"adj"},
+{w:"cool",art:null,pl:null,en:"cool",cat:"andere Wörter",type:"adj"},
+{w:"falsch",art:null,pl:null,en:"wrong",cat:"andere Wörter",type:"adj"},
+{w:"Problem",art:"das",pl:"Probleme",en:"problem",cat:"andere Wörter",type:"noun"},
+{w:"Praxis",art:"die",pl:"Praxen",en:"practice / doctor's office",cat:"andere Wörter",type:"noun"},
+{w:"schade",art:null,pl:null,en:"a shame / pity",cat:"andere Wörter",type:"adj"},
+{w:"Tut mir leid.",art:null,pl:null,en:"I'm sorry.",cat:"andere Wörter",type:"phrase"},
+{w:"Bitte entschuldigen Sie.",art:null,pl:null,en:"Please excuse me. (formal)",cat:"andere Wörter",type:"phrase"},
+{w:"Macht nichts.",art:null,pl:null,en:"No worries / it doesn't matter.",cat:"andere Wörter",type:"phrase"},
+];
+
+const ART_COLOR = { "der":"var(--der)", "die":"var(--die)", "das":"var(--das)", "der/die":"var(--none)" };
+const TYPE_LABEL = { noun:"Nomen", verb:"Verb", phrase:"Ausdruck", adj:"Adjektiv", adv:"Adverb" };
+
+const categories = ["Alle", ...Array.from(new Set(DATA.map(d=>d.cat)))];
+let activeCat = "Alle";
+let deck = [];
+let idx = 0;
+let flipped = false;
+let known = new Set(); // in-memory only (resets on reload)
+
+function keyOf(item){ return item.w; }
+
+function buildDeck(){
+  deck = DATA.filter(d => activeCat==="Alle" || d.cat===activeCat);
+  idx = 0;
+  flipped = false;
+}
+
+function renderAisles(){
+  const row = document.getElementById("aisleRow");
+  row.innerHTML = "";
+  categories.forEach(cat=>{
+    const chip = document.createElement("div");
+    chip.className = "chip" + (cat===activeCat ? " active":"");
+    chip.textContent = cat;
+    chip.onclick = ()=>{ activeCat = cat; buildDeck(); renderAisles(); renderCard(); };
+    row.appendChild(chip);
+  });
+}
+
+function renderCard(){
+  const card = document.getElementById("card");
+  card.classList.remove("flipped");
+  flipped = false;
+
+  if(deck.length===0){
+    document.getElementById("frontWord").textContent = "Keine Karten";
+    return;
+  }
+  const item = deck[idx];
+
+  document.getElementById("frontWord").textContent = item.w;
+  document.getElementById("frontHint").textContent =
+    item.type==="noun" ? "Welcher Artikel? Welcher Plural?" : ("(" + TYPE_LABEL[item.type] + ") — Bedeutung?");
+  document.getElementById("frontTag").style.opacity = 0;
+  document.getElementById("frontType").textContent = TYPE_LABEL[item.type] || "";
+
+  const bt = document.getElementById("backTag");
+  bt.style.background = "rgba(41,50,65,0.55)";
+  bt.style.color = "var(--paper)";
+  bt.textContent = TYPE_LABEL[item.type] || "";
+  bt.style.opacity = 1;
+
+  const backWordEl = document.getElementById("backWord");
+  if(item.art){
+    const color = ART_COLOR[item.art] || "var(--none)";
+    backWordEl.innerHTML = '<span class="art-inline" style="color:' + color + '">' + item.art + '</span> ' + item.w;
+  } else {
+    backWordEl.textContent = item.w;
+  }
+  document.getElementById("backPlural").innerHTML = item.pl ? ("Plural: <b>" + item.pl + "</b>") : "";
+  document.getElementById("backEnglish").textContent = item.en;
+
+  document.getElementById("counter").textContent = (idx+1) + " / " + deck.length;
+  document.getElementById("knownCounter").textContent = "Gelernt: " + known.size + " / " + DATA.length;
+}
+
+function flip(){
+  if(deck.length===0) return;
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+function next(){
+  if(deck.length===0) return;
+  idx = (idx+1) % deck.length;
+  renderCard();
+}
+function prev(){
+  if(deck.length===0) return;
+  idx = (idx-1+deck.length) % deck.length;
+  renderCard();
+}
+function shuffle(){
+  for(let i=deck.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+  idx = 0;
+  renderCard();
+}
+function markKnown(learned){
+  if(deck.length===0) return;
+  const item = deck[idx];
+  if(learned) known.add(keyOf(item));
+  else known.delete(keyOf(item));
+  next();
+}
+
+document.getElementById("card").addEventListener("click", flip);
+document.getElementById("nextBtn").addEventListener("click", next);
+document.getElementById("prevBtn").addEventListener("click", prev);
+document.getElementById("shuffleBtn").addEventListener("click", shuffle);
+document.getElementById("knowBtn").addEventListener("click", ()=>markKnown(true));
+document.getElementById("againBtn").addEventListener("click", ()=>markKnown(false));
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  known = new Set();
+  renderCard();
+});
+
+document.addEventListener("keydown",(e)=>{
+  if(e.code==="Space"){ e.preventDefault(); flip(); }
+  else if(e.code==="ArrowRight"){ next(); }
+  else if(e.code==="ArrowLeft"){ prev(); }
+});
+
+buildDeck();
+renderAisles();
+renderCard();
+</script>
+</body>
+</html>
