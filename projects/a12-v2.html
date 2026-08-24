@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wortschatzkasten — Karteikarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500;600;700&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cork:#3E2C1E;
+    --cork-dark:#2B1D13;
+    --cork-hi:#4A3524;
+    --card:#FBF7ED;
+    --card-edge:#E7DFC9;
+    --card-line:#DCD3B8;
+    --ink:#241F1C;
+    --ink-soft:#6B6153;
+    --paper-shadow: rgba(0,0,0,.45);
+    --crimson:#C81F4E;
+    --crimson-dark:#9C1740;
+    --amber:#E0812E;
+    --amber-dark:#B4611B;
+    --sage:#5C8A5C;
+    --sage-dark:#3F6B40;
+    --rust:#9C4A34;
+    --rust-dark:#7A3626;
+    --accent: var(--crimson);
+    --accent-dark: var(--crimson-dark);
+    --focus: #F2C744;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Karla', sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,0,0,.12) 0, transparent 3%),
+      radial-gradient(circle at 82% 12%, rgba(0,0,0,.10) 0, transparent 2.6%),
+      radial-gradient(circle at 40% 78%, rgba(0,0,0,.10) 0, transparent 2.4%),
+      radial-gradient(circle at 68% 55%, rgba(0,0,0,.08) 0, transparent 2%),
+      radial-gradient(circle at 25% 60%, rgba(0,0,0,.09) 0, transparent 2.2%),
+      radial-gradient(circle at 90% 80%, rgba(0,0,0,.10) 0, transparent 2.4%),
+      radial-gradient(circle at 55% 30%, rgba(0,0,0,.08) 0, transparent 2%),
+      linear-gradient(155deg, var(--cork-hi), var(--cork) 45%, var(--cork-dark) 100%);
+    background-size: 3px 3px, 4px 4px, 3px 3px, 4px 4px, 3px 3px, 4px 4px, 3px 3px, cover;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 28px 16px 60px;
+    transition: background .5s ease;
+  }
+
+  /* ---------- header ---------- */
+  .masthead{
+    width:100%;
+    max-width:760px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .masthead h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    color:#F3EAD8;
+    font-size:clamp(28px, 5vw, 40px);
+    margin:0;
+    letter-spacing:.2px;
+    text-shadow: 0 2px 0 rgba(0,0,0,.35);
+  }
+  .masthead .sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:#C9B9A0;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-top:4px;
+  }
+
+  .chapter-tabs{
+    display:flex;
+    gap:8px;
+  }
+  .chapter-tab{
+    position:relative;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:15px;
+    color:#fff;
+    width:38px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:none;
+    cursor:pointer;
+    clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+    box-shadow: 0 3px 6px rgba(0,0,0,.4);
+    opacity:.55;
+    transform: translateY(2px);
+    transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+  }
+  .chapter-tab[data-ch="all"]{ background: linear-gradient(160deg, #7d8f7a, #52604f); font-size:10px; letter-spacing:.03em;}
+  .chapter-tab.active{ opacity:1; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,.45); }
+  .chapter-tab:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+
+  /* ---------- mode tabs ---------- */
+  .mode-tabs{
+    width:100%;
+    max-width:760px;
+    display:flex;
+    gap:2px;
+    margin-bottom:14px;
+    background: rgba(0,0,0,.22);
+    border-radius:22px;
+    padding:3px;
+    border:1px solid #4a3826;
+  }
+  .mode-tab{
+    flex:1;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:#C9B9A0;
+    background:transparent;
+    border:none;
+    border-radius:18px;
+    padding:10px 14px;
+    cursor:pointer;
+    transition: background .18s ease, color .18s ease;
+  }
+  .mode-tab.active{
+    background: var(--accent);
+    color:#fff;
+    box-shadow: 0 3px 8px rgba(0,0,0,.35);
+  }
+  .mode-tab:hover:not(.active){ color:#EFE6D3; }
+  .mode-tab:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+
+  /* ---------- controls strip ---------- */
+  .controls{
+    width:100%;
+    max-width:760px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:26px;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .controls select{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    background: #2B1D13;
+    color:#EFE6D3;
+    border:1px solid #5A4530;
+    border-radius:5px;
+    padding:8px 10px;
+    cursor:pointer;
+  }
+  .controls select:focus-visible{ outline:3px solid var(--focus); outline-offset:1px; }
+  .icon-btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    background: transparent;
+    color:#EFE6D3;
+    border:1px solid #5A4530;
+    border-radius:5px;
+    padding:8px 12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .icon-btn:hover{ background: rgba(255,255,255,.06); border-color:#8a6f4d; }
+  .icon-btn:focus-visible{ outline:3px solid var(--focus); outline-offset:1px; }
+  .spacer{ flex:1; }
+
+  .tally{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:#EFE6D3;
+    display:flex;
+    gap:14px;
+    align-items:center;
+  }
+  .tally span.dot{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:5px; }
+
+  /* ---------- stage ---------- */
+  .stage{
+    width:100%;
+    max-width:420px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .card-frame{
+    perspective:1400px;
+    width:100%;
+    max-width:360px;
+    height:460px;
+    position:relative;
+    margin-bottom:8px;
+  }
+  .pin{
+    position:absolute;
+    top:-13px;
+    left:50%;
+    transform:translateX(-50%);
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #ff8a8a, var(--accent) 60%, var(--accent-dark) 100%);
+    box-shadow: 0 3px 4px rgba(0,0,0,.5), inset 0 1px 2px rgba(255,255,255,.5);
+    z-index:5;
+    transition: background .3s ease;
+  }
+  .pin::after{
+    content:"";
+    position:absolute;
+    top:16px; left:50%;
+    transform:translateX(-50%);
+    width:2px; height:10px;
+    background: rgba(0,0,0,.35);
+    filter: blur(.5px);
+  }
+
+  .card{
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.2,.9,.25,1);
+    cursor:pointer;
+    transform: rotate(var(--tilt, -1.2deg));
+  }
+  .card.flipped{ transform: rotate(var(--tilt, -1.2deg)) rotateY(180deg); }
+  .card:focus-visible{ outline:3px solid var(--focus); outline-offset:6px; }
+
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    background: var(--card);
+    border-radius: 3px 10px 10px 3px;
+    box-shadow:
+      0 18px 30px var(--paper-shadow),
+      0 2px 0 rgba(0,0,0,.15) inset;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0, transparent 39px,
+        var(--card-line) 40px
+      );
+    padding: 34px 26px 24px;
+    display:flex;
+    flex-direction:column;
+  }
+  .face.back{ transform: rotateY(180deg); }
+
+  .face::before{ /* left punch margin line, like ruled paper */
+    content:"";
+    position:absolute;
+    left:20px; top:0; bottom:0;
+    width:1px;
+    background: rgba(200,31,78,.25);
+  }
+
+  .tab-flap{
+    position:absolute;
+    top:0;
+    right:14px;
+    width:34px;
+    height:30px;
+    background: linear-gradient(160deg, var(--accent), var(--accent-dark));
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding-top:5px;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    color:#fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,.3);
+  }
+
+  .cat-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color: var(--accent-dark);
+    margin-bottom:6px;
+    padding-right:40px;
+  }
+  .pos-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color: var(--ink-soft);
+    margin-bottom:auto;
+  }
+
+  .word-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .article-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .article{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size:15px;
+    padding:2px 8px;
+    border-radius:4px;
+    color:#fff;
+  }
+  .article.der{ background:#3D5A80; }
+  .article.die{ background:#B5405A; }
+  .article.das{ background:#4C7C4A; }
+  .article.dd{ background:#8a6f4d; font-size:11px; }
+  .article.big{
+    font-size:22px;
+    padding:6px 16px;
+    border-radius:8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,.2);
+  }
+  .article-reveal-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  .noun-gloss{
+    font-family:'Karla', sans-serif;
+    font-style:italic;
+    font-size:14px;
+    color: var(--ink-soft);
+    margin-top:auto;
+    padding-top:10px;
+    border-top:1px solid var(--card-edge);
+  }
+
+  .german-word{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: clamp(26px, 7vw, 34px);
+    line-height:1.12;
+    color:var(--ink);
+  }
+  .plural-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color: var(--ink-soft);
+  }
+  .example-front{
+    font-family:'Karla', sans-serif;
+    font-style:italic;
+    font-size:13px;
+    color: var(--ink-soft);
+    margin-top:2px;
+  }
+  .flip-hint{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color: var(--ink-soft);
+    opacity:.65;
+    align-self:flex-end;
+  }
+
+  .english-word{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-style:italic;
+    font-size: clamp(22px, 6vw, 28px);
+    color:var(--ink);
+    margin-bottom:14px;
+  }
+  .back .cat-label{ padding-right:40px; }
+  .example-back{
+    font-family:'Karla', sans-serif;
+    font-size:14px;
+    color: var(--ink-soft);
+    border-left:2px solid var(--card-edge);
+    padding-left:10px;
+    margin-top:auto;
+    line-height:1.5;
+  }
+  .example-back .lbl{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color: var(--accent-dark);
+    margin-bottom:4px;
+  }
+
+  /* ---------- rating buttons ---------- */
+  .rate-row{
+    display:flex;
+    gap:14px;
+    margin-top:14px;
+    width:100%;
+    max-width:360px;
+  }
+  .rate-btn{
+    flex:1;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:.02em;
+    padding:13px 8px;
+    border-radius:24px;
+    border:none;
+    cursor:pointer;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35);
+    transition: transform .12s ease, box-shadow .12s ease, opacity .2s ease;
+  }
+  .rate-btn:disabled{ opacity:.35; cursor:not-allowed; }
+  .rate-btn:not(:disabled):hover{ transform: translateY(-2px); box-shadow: 0 7px 14px rgba(0,0,0,.4); }
+  .rate-btn:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+  .rate-btn.again{ background: linear-gradient(160deg, var(--rust), var(--rust-dark)); }
+  .rate-btn.know{ background: linear-gradient(160deg, var(--sage), var(--sage-dark)); }
+  .rate-btn .pindot{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.85); }
+
+  .progress-row{
+    width:100%;
+    max-width:360px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:16px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:#C9B9A0;
+  }
+  .progress-track{
+    flex:1;
+    height:4px;
+    background: rgba(255,255,255,.12);
+    border-radius:2px;
+    margin:0 12px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background: var(--accent);
+    width:0%;
+    transition: width .3s ease, background .3s ease;
+  }
+
+  .empty-state{
+    text-align:center;
+    color:#EFE6D3;
+    font-family:'Karla', sans-serif;
+    padding:60px 20px;
+    max-width:360px;
+  }
+  .empty-state h2{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:26px;
+    margin-bottom:8px;
+  }
+  .empty-state button{
+    margin-top:18px;
+    font-family:'JetBrains Mono', monospace;
+    background: var(--accent);
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:20px;
+    cursor:pointer;
+    font-size:12.5px;
+  }
+
+  footer{
+    margin-top:34px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    color:#9C8A70;
+    text-align:center;
+    max-width:400px;
+    line-height:1.6;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card, .rate-btn, .chapter-tab, .progress-fill{ transition:none !important; }
+  }
+
+  @media (max-width:420px){
+    .card-frame{ height:420px; }
+    .controls{ justify-content:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="masthead">
+    <div>
+      <h1>Wortschatzkasten</h1>
+      <div class="sub" id="subtitle">Kapitel 8, 9, 11 &amp; 12 · Karteikarten</div>
+    </div>
+    <div class="chapter-tabs" role="group" aria-label="Kapitel wählen" id="chapterTabs">
+      <!-- populated dynamically from VOCAB_DATA -->
+    </div>
+  </div>
+
+  <div class="mode-tabs" role="group" aria-label="Übungsmodus wählen">
+    <button class="mode-tab active" id="mode-translate" data-mode="translate">Vokabeln</button>
+    <button class="mode-tab" id="mode-article" data-mode="article">Artikel-Training</button>
+  </div>
+
+  <div class="controls">
+    <select id="categorySelect" aria-label="Kategorie filtern">
+      <option value="all">Alle Kategorien</option>
+    </select>
+    <button class="icon-btn" id="shuffleBtn" title="Mischen">⤨ Mischen</button>
+    <button class="icon-btn" id="dirBtn" title="Richtung umkehren">DE → EN</button>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="resetBtn" title="Fortschritt zurücksetzen">↺ Zurücksetzen</button>
+  </div>
+
+  <div class="controls" style="margin-top:-14px;">
+    <div class="tally" id="tally">
+      <span><span class="dot" style="background:var(--sage)"></span><span id="knowCount">0</span> gewusst</span>
+      <span><span class="dot" style="background:var(--rust)"></span><span id="learnCount">0</span> nochmal</span>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="card-frame" id="cardFrame">
+      <div class="pin" id="pin"></div>
+      <div class="card" id="card" tabindex="0" role="button" aria-label="Karteikarte umdrehen">
+        <div class="face front">
+          <div class="tab-flap" id="tabFlapFront">8</div>
+          <div class="cat-label" id="catLabelFront">—</div>
+          <div class="word-wrap" id="frontWrap"></div>
+          <div class="flip-hint">antippen zum umdrehen</div>
+        </div>
+        <div class="face back">
+          <div class="tab-flap" id="tabFlapBack">8</div>
+          <div class="cat-label" id="catLabelBack">—</div>
+          <div class="word-wrap" id="backWrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rate-row">
+      <button class="rate-btn again" id="againBtn"><span class="pindot"></span>Nochmal üben</button>
+      <button class="rate-btn know" id="knowBtn"><span class="pindot"></span>Kann ich!</button>
+    </div>
+
+    <div class="progress-row">
+      <span id="progressLabel">1 / 1</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span id="progressPct">0%</span>
+    </div>
+  </div>
+
+  <footer>
+    Tippe die Karte an, um die Übersetzung zu sehen. Wähle „Kann ich!“ oder „Nochmal üben“, um zur nächsten Karte zu gehen — dein Fortschritt wird lokal in diesem Browser gespeichert.
+  </footer>
+
+<script>
+const VOCAB_DATA = {"chapters": [{"number": 8, "title": "Fit und gesund", "accent": "#C81F4E", "categories": [{"name": "fit und gesund", "words": [{"de": "fit", "article": null, "plural": null, "en": "fit", "example": null, "pos": "adj"}, {"de": "sportlich", "article": null, "plural": null, "en": "athletic, sporty", "example": null, "pos": "adj"}, {"de": "Sportlerin", "article": "die", "plural": "-nen", "en": "female athlete", "example": null, "pos": "noun"}, {"de": "gesund leben", "article": null, "plural": null, "en": "to live a healthy life", "example": null, "pos": "phrase"}, {"de": "anziehen", "article": null, "plural": null, "en": "to put on (clothes)", "example": "die Sportschuhe anziehen", "pos": "verb"}, {"de": "weitermachen", "article": null, "plural": null, "en": "to continue, carry on", "example": null, "pos": "verb"}, {"de": "schaffen", "article": null, "plural": null, "en": "to manage, get done", "example": null, "pos": "verb"}, {"de": "egal", "article": null, "plural": null, "en": "doesn't matter", "example": "Egal, ich schaffe das.", "pos": "adj"}, {"de": "regelmäßig", "article": null, "plural": null, "en": "regularly", "example": "regelmäßig Sport machen", "pos": "adj"}, {"de": "täglich", "article": null, "plural": null, "en": "daily", "example": null, "pos": "adj"}, {"de": "faul", "article": null, "plural": null, "en": "lazy", "example": null, "pos": "adj"}, {"de": "aktiv", "article": null, "plural": null, "en": "active", "example": null, "pos": "adj"}, {"de": "gefährlich", "article": null, "plural": null, "en": "dangerous", "example": null, "pos": "adj"}, {"de": "müde", "article": null, "plural": null, "en": "tired", "example": null, "pos": "adj"}, {"de": "hungrig", "article": null, "plural": null, "en": "hungry", "example": null, "pos": "adj"}, {"de": "richtig", "article": null, "plural": null, "en": "really, properly", "example": "Ich bin richtig hungrig.", "pos": "adv"}, {"de": "vergessen", "article": null, "plural": null, "en": "to forget", "example": "er vergisst", "pos": "verb"}, {"de": "vermissen", "article": null, "plural": null, "en": "to miss (someone/something)", "example": null, "pos": "verb"}, {"de": "Süßigkeit", "article": "die", "plural": "-en", "en": "sweet, candy", "example": null, "pos": "noun"}, {"de": "mindestens", "article": null, "plural": null, "en": "at least", "example": null, "pos": "adv"}]}, {"name": "persönliche Angaben", "words": [{"de": "Alter", "article": "das", "plural": "(Sg.)", "en": "age", "example": null, "pos": "noun"}, {"de": "Größe", "article": "die", "plural": "-n", "en": "height, size", "example": null, "pos": "noun"}, {"de": "Gewicht", "article": "das", "plural": "(Sg.)", "en": "weight", "example": null, "pos": "noun"}, {"de": "wiegen", "article": null, "plural": null, "en": "to weigh", "example": null, "pos": "verb"}, {"de": "schwer", "article": null, "plural": null, "en": "heavy", "example": "Wie schwer ist er?", "pos": "adj"}]}, {"name": "Körperteile", "words": [{"de": "Körper", "article": "der", "plural": "-", "en": "body", "example": null, "pos": "noun"}, {"de": "Kopf", "article": "der", "plural": "¨e", "en": "head", "example": null, "pos": "noun"}, {"de": "Hals", "article": "der", "plural": "¨e", "en": "neck, throat", "example": null, "pos": "noun"}, {"de": "Bauch", "article": "der", "plural": "¨e", "en": "stomach, belly", "example": null, "pos": "noun"}, {"de": "Rücken", "article": "der", "plural": "-", "en": "back", "example": null, "pos": "noun"}, {"de": "Arm", "article": "der", "plural": "-e", "en": "arm", "example": null, "pos": "noun"}, {"de": "Hand", "article": "die", "plural": "¨e", "en": "hand", "example": null, "pos": "noun"}, {"de": "Finger", "article": "der", "plural": "-", "en": "finger", "example": null, "pos": "noun"}, {"de": "Bein", "article": "das", "plural": "-e", "en": "leg", "example": null, "pos": "noun"}, {"de": "Knie", "article": "das", "plural": "-", "en": "knee", "example": null, "pos": "noun"}, {"de": "Fuß", "article": "der", "plural": "¨e", "en": "foot", "example": null, "pos": "noun"}, {"de": "Gesicht", "article": "das", "plural": "-er", "en": "face", "example": null, "pos": "noun"}, {"de": "Mund", "article": "der", "plural": "¨er", "en": "mouth", "example": null, "pos": "noun"}, {"de": "Zahn", "article": "der", "plural": "¨e", "en": "tooth", "example": null, "pos": "noun"}, {"de": "Auge", "article": "das", "plural": "-n", "en": "eye", "example": null, "pos": "noun"}, {"de": "Ohr", "article": "das", "plural": "-en", "en": "ear", "example": null, "pos": "noun"}, {"de": "Nase", "article": "die", "plural": "-n", "en": "nose", "example": null, "pos": "noun"}, {"de": "riechen", "article": null, "plural": null, "en": "to smell", "example": null, "pos": "verb"}, {"de": "Haar", "article": "das", "plural": "-e", "en": "hair", "example": null, "pos": "noun"}]}, {"name": "nach dem Unfall", "words": [{"de": "Unfall", "article": "der", "plural": "¨e", "en": "accident", "example": null, "pos": "noun"}, {"de": "Verletzte", "article": "der/die", "plural": "-n", "en": "injured person", "example": null, "pos": "noun"}, {"de": "verletzt", "article": null, "plural": null, "en": "injured", "example": null, "pos": "adj"}, {"de": "weh tun", "article": null, "plural": null, "en": "to hurt", "example": "es tut weh", "pos": "verb"}, {"de": "Schmerz", "article": "der", "plural": "-en", "en": "pain", "example": null, "pos": "noun"}, {"de": "Wunde", "article": "die", "plural": "-n", "en": "wound", "example": null, "pos": "noun"}, {"de": "sauber machen", "article": null, "plural": null, "en": "to clean", "example": null, "pos": "phrase"}, {"de": "Verband", "article": "der", "plural": "¨e", "en": "bandage", "example": null, "pos": "noun"}, {"de": "Pflaster", "article": "das", "plural": "-", "en": "plaster, band-aid", "example": null, "pos": "noun"}, {"de": "Salbe", "article": "die", "plural": "-n", "en": "ointment", "example": null, "pos": "noun"}, {"de": "Rezept", "article": "das", "plural": "-e", "en": "prescription", "example": null, "pos": "noun"}, {"de": "bekommen", "article": null, "plural": null, "en": "to get, receive", "example": "Frau Pohn bekommt ein Rezept.", "pos": "verb"}, {"de": "Apotheke", "article": "die", "plural": "-n", "en": "pharmacy", "example": null, "pos": "noun"}, {"de": "bewegen", "article": null, "plural": null, "en": "to move", "example": "Bewegen Sie das Bein nur wenig.", "pos": "verb"}, {"de": "sollen", "article": null, "plural": null, "en": "should, to be supposed to", "example": "er soll — Ich soll den Verband wechseln.", "pos": "verb"}, {"de": "Gute Besserung!", "article": null, "plural": null, "en": "Get well soon!", "example": null, "pos": "phrase"}]}, {"name": "Besuch beim Arzt", "words": [{"de": "Doktor", "article": "der", "plural": "-en", "en": "doctor", "example": null, "pos": "noun"}, {"de": "Krankheit", "article": "die", "plural": "-en", "en": "illness", "example": null, "pos": "noun"}, {"de": "Schnupfen", "article": "der", "plural": "-", "en": "cold, runny nose", "example": null, "pos": "noun"}, {"de": "Fieber", "article": "das", "plural": "(Sg.)", "en": "fever", "example": null, "pos": "noun"}, {"de": "husten", "article": null, "plural": null, "en": "to cough", "example": null, "pos": "verb"}, {"de": "erkältet sein", "article": null, "plural": null, "en": "to have a cold", "example": null, "pos": "phrase"}, {"de": "total", "article": null, "plural": null, "en": "totally", "example": "Ich bin total erkältet.", "pos": "adv"}, {"de": "schlecht", "article": null, "plural": null, "en": "bad, unwell", "example": "Mir ist schlecht.", "pos": "adj"}, {"de": "...schmerzen", "article": "die", "plural": "(Pl.)", "en": "...ache", "example": "Halsschmerzen, Kopfschmerzen ...", "pos": "noun"}, {"de": "dürfen", "article": null, "plural": null, "en": "to be allowed to, may", "example": "er darf — Ich darf nicht baden.", "pos": "verb"}, {"de": "erlaubt", "article": null, "plural": null, "en": "allowed, permitted", "example": null, "pos": "adj"}, {"de": "verboten", "article": null, "plural": null, "en": "forbidden", "example": null, "pos": "adj"}, {"de": "rauchen", "article": null, "plural": null, "en": "to smoke", "example": "Rauchen Sie nicht!", "pos": "verb"}, {"de": "ein Medikament nehmen", "article": null, "plural": null, "en": "to take medicine", "example": null, "pos": "phrase"}, {"de": "Tablette", "article": "die", "plural": "-n", "en": "tablet, pill", "example": null, "pos": "noun"}, {"de": "Saft", "article": "der", "plural": "¨e", "en": "juice", "example": null, "pos": "noun"}, {"de": "gegen", "article": null, "plural": null, "en": "against, for", "example": "Er nimmt einen Saft gegen den Husten.", "pos": "prep"}, {"de": "Tropfen", "article": "der", "plural": "-", "en": "drop", "example": null, "pos": "noun"}, {"de": "Spritze", "article": "die", "plural": "-n", "en": "injection, shot", "example": null, "pos": "noun"}, {"de": "Hausmittel", "article": "das", "plural": "-", "en": "home remedy", "example": null, "pos": "noun"}, {"de": "Kontrolle", "article": "die", "plural": "-n", "en": "check-up", "example": null, "pos": "noun"}, {"de": "Danke für Ihre Hilfe!", "article": null, "plural": null, "en": "Thank you for your help!", "example": null, "pos": "phrase"}]}, {"name": "im Krankenhaus", "words": [{"de": "Notarzt", "article": "der", "plural": "¨e", "en": "emergency doctor", "example": null, "pos": "noun"}, {"de": "Physiotherapeutin", "article": "die", "plural": "-nen", "en": "physiotherapist (f.)", "example": null, "pos": "noun"}, {"de": "Übung", "article": "die", "plural": "-en", "en": "exercise", "example": "Ich zeige den Patienten Übungen.", "pos": "noun"}, {"de": "Krankenpfleger", "article": "der", "plural": "-", "en": "male nurse", "example": null, "pos": "noun"}, {"de": "Laborantin", "article": "die", "plural": "-nen", "en": "lab technician (f.)", "example": null, "pos": "noun"}, {"de": "untersuchen", "article": null, "plural": null, "en": "to examine", "example": null, "pos": "verb"}, {"de": "Blut", "article": "das", "plural": "(Sg.)", "en": "blood", "example": null, "pos": "noun"}]}, {"name": "im Kurs", "words": [{"de": "wiederholen", "article": null, "plural": null, "en": "to repeat", "example": null, "pos": "verb"}, {"de": "aufschreiben", "article": null, "plural": null, "en": "to write down", "example": null, "pos": "verb"}, {"de": "vorlesen", "article": null, "plural": null, "en": "to read aloud", "example": "er liest vor", "pos": "verb"}, {"de": "aufmachen", "article": null, "plural": null, "en": "to open", "example": null, "pos": "verb"}, {"de": "Tafel", "article": "die", "plural": "-n", "en": "blackboard", "example": null, "pos": "noun"}, {"de": "Fenster", "article": "das", "plural": "-", "en": "window", "example": "Mach bitte das Fenster auf.", "pos": "noun"}, {"de": "leise", "article": null, "plural": null, "en": "quiet, soft", "example": null, "pos": "adj"}, {"de": "ruhig", "article": null, "plural": null, "en": "calm, quiet", "example": null, "pos": "adj"}]}, {"name": "andere wichtige Wörter und Wendungen", "words": [{"de": "Ergebnis", "article": "das", "plural": "-se", "en": "result", "example": null, "pos": "noun"}, {"de": "anstrengend", "article": null, "plural": null, "en": "strenuous, tiring", "example": "Die Arbeit ist anstrengend.", "pos": "adj"}, {"de": "Freizeit", "article": "die", "plural": "(Sg.)", "en": "free time", "example": null, "pos": "noun"}, {"de": "Experiment", "article": "das", "plural": "-e", "en": "experiment", "example": null, "pos": "noun"}, {"de": "Tipp", "article": "der", "plural": "-s", "en": "tip", "example": null, "pos": "noun"}, {"de": "jemand", "article": null, "plural": null, "en": "someone", "example": "Hat jemand einen Tipp für mich?", "pos": "pron"}, {"de": "einschlafen", "article": null, "plural": null, "en": "to fall asleep", "example": "er schläft ein", "pos": "verb"}, {"de": "versuchen", "article": null, "plural": null, "en": "to try", "example": null, "pos": "verb"}, {"de": "baden", "article": null, "plural": null, "en": "to bathe", "example": null, "pos": "verb"}, {"de": "glücklich", "article": null, "plural": null, "en": "happy", "example": null, "pos": "adj"}, {"de": "perfekt", "article": null, "plural": null, "en": "perfect", "example": "Für mich ist das perfekt.", "pos": "adj"}, {"de": "sofort", "article": null, "plural": null, "en": "immediately", "example": null, "pos": "adv"}, {"de": "Hurra!", "article": null, "plural": null, "en": "Hooray!", "example": null, "pos": "phrase"}, {"de": "sicher", "article": null, "plural": null, "en": "certain, sure", "example": "Ich bin sicher die Erste.", "pos": "adj"}, {"de": "App", "article": "die", "plural": "-s", "en": "app", "example": null, "pos": "noun"}]}]}, {"number": 9, "title": "Wohnen", "accent": "#E07B39", "categories": [{"name": "Wohnformen", "words": [{"de": "Wohnung", "article": "die", "plural": "-en", "en": "apartment, flat", "example": null, "pos": "noun"}, {"de": "Hochhaus", "article": "das", "plural": "¨er", "en": "high-rise building", "example": null, "pos": "noun"}, {"de": "WG", "article": "die", "plural": "-s", "en": "shared flat", "example": "die Wohngemeinschaft", "pos": "noun"}, {"de": "Apartment", "article": "das", "plural": "-s", "en": "apartment, studio", "example": null, "pos": "noun"}, {"de": "Reihenhaus", "article": "das", "plural": "¨er", "en": "row house, terraced house", "example": null, "pos": "noun"}]}, {"name": "Zimmer", "words": [{"de": "Raum", "article": "der", "plural": "¨e", "en": "room, space", "example": null, "pos": "noun"}, {"de": "Bad", "article": "das", "plural": "¨er", "en": "bathroom", "example": null, "pos": "noun"}, {"de": "Dusche", "article": "die", "plural": "-n", "en": "shower", "example": null, "pos": "noun"}, {"de": "Flur", "article": "der", "plural": "-e", "en": "hallway", "example": null, "pos": "noun"}, {"de": "Küche", "article": "die", "plural": "-n", "en": "kitchen", "example": null, "pos": "noun"}, {"de": "Schlafzimmer", "article": "das", "plural": "-", "en": "bedroom", "example": null, "pos": "noun"}, {"de": "Wohnzimmer", "article": "das", "plural": "-", "en": "living room", "example": null, "pos": "noun"}, {"de": "Kinderzimmer", "article": "das", "plural": "-", "en": "children's room", "example": null, "pos": "noun"}, {"de": "Balkon", "article": "der", "plural": "-e", "en": "balcony", "example": null, "pos": "noun"}, {"de": "Terrasse", "article": "die", "plural": "-n", "en": "terrace, patio", "example": null, "pos": "noun"}, {"de": "Garten", "article": "der", "plural": "¨", "en": "garden", "example": null, "pos": "noun"}, {"de": "Treppe", "article": "die", "plural": "-n", "en": "stairs", "example": null, "pos": "noun"}, {"de": "Tür", "article": "die", "plural": "-en", "en": "door", "example": null, "pos": "noun"}, {"de": "Decke", "article": "die", "plural": "-n", "en": "ceiling", "example": null, "pos": "noun"}]}, {"name": "eine Wohnung beschreiben", "words": [{"de": "Erdgeschoss", "article": "das", "plural": "-e", "en": "ground floor", "example": null, "pos": "noun"}, {"de": "Stock", "article": "der", "plural": "¨e", "en": "floor, storey", "example": "im zweiten Stock", "pos": "noun"}, {"de": "Lage", "article": "die", "plural": "(Sg.)", "en": "location", "example": "Die Lage ist zentral.", "pos": "noun"}, {"de": "Nähe", "article": "die", "plural": "(Sg.)", "en": "proximity, vicinity", "example": null, "pos": "noun"}, {"de": "Zentrum", "article": "das", "plural": "Zentren", "en": "center", "example": null, "pos": "noun"}, {"de": "zentral", "article": null, "plural": null, "en": "central", "example": null, "pos": "adj"}, {"de": "direkt", "article": null, "plural": null, "en": "directly", "example": "Die Wohnung ist direkt am Bahnhof.", "pos": "adv"}, {"de": "weit", "article": null, "plural": null, "en": "far", "example": "Es ist nicht weit zur Uni.", "pos": "adj"}, {"de": "billig", "article": null, "plural": null, "en": "cheap", "example": null, "pos": "adj"}, {"de": "günstig", "article": null, "plural": null, "en": "affordable, good value", "example": null, "pos": "adj"}, {"de": "dunkel", "article": null, "plural": null, "en": "dark", "example": null, "pos": "adj"}, {"de": "hell", "article": null, "plural": null, "en": "bright, light", "example": null, "pos": "adj"}, {"de": "gemütlich", "article": null, "plural": null, "en": "cozy", "example": null, "pos": "adj"}, {"de": "elegant", "article": null, "plural": null, "en": "elegant", "example": null, "pos": "adj"}, {"de": "Blick", "article": "der", "plural": "-e", "en": "view", "example": "Der Blick aus dem Fenster ist toll.", "pos": "noun"}, {"de": "aussehen", "article": null, "plural": null, "en": "to look, appear", "example": "er sieht aus — Die Wohnung sieht schön aus.", "pos": "verb"}]}, {"name": "Möbel und Geräte", "words": [{"de": "Möbel", "article": "die", "plural": "(Pl.)", "en": "furniture", "example": null, "pos": "noun"}, {"de": "Gerät", "article": "das", "plural": "-e", "en": "device, appliance", "example": null, "pos": "noun"}, {"de": "Lampe", "article": "die", "plural": "-n", "en": "lamp", "example": null, "pos": "noun"}, {"de": "Licht", "article": "das", "plural": "-er", "en": "light", "example": null, "pos": "noun"}, {"de": "Pflanze", "article": "die", "plural": "-n", "en": "plant", "example": null, "pos": "noun"}, {"de": "Regal", "article": "das", "plural": "-e", "en": "shelf", "example": null, "pos": "noun"}, {"de": "Schrank", "article": "der", "plural": "¨e", "en": "cupboard, closet", "example": null, "pos": "noun"}, {"de": "Schreibtisch", "article": "der", "plural": "-e", "en": "desk", "example": null, "pos": "noun"}, {"de": "Sessel", "article": "der", "plural": "-", "en": "armchair", "example": null, "pos": "noun"}, {"de": "Sofa", "article": "das", "plural": "-s", "en": "sofa", "example": null, "pos": "noun"}, {"de": "Stuhl", "article": "der", "plural": "¨e", "en": "chair", "example": null, "pos": "noun"}, {"de": "Tisch", "article": "der", "plural": "-e", "en": "table", "example": null, "pos": "noun"}, {"de": "Teppich", "article": "der", "plural": "-e", "en": "carpet, rug", "example": null, "pos": "noun"}, {"de": "Bett", "article": "das", "plural": "-en", "en": "bed", "example": null, "pos": "noun"}, {"de": "Fernseher", "article": "der", "plural": "-", "en": "television", "example": null, "pos": "noun"}, {"de": "Herd", "article": "der", "plural": "-e", "en": "stove", "example": null, "pos": "noun"}, {"de": "Kaffeemaschine", "article": "die", "plural": "-n", "en": "coffee maker", "example": null, "pos": "noun"}, {"de": "Kühlschrank", "article": "der", "plural": "¨e", "en": "refrigerator", "example": null, "pos": "noun"}, {"de": "Spülmaschine", "article": "die", "plural": "-n", "en": "dishwasher", "example": null, "pos": "noun"}, {"de": "Waschmaschine", "article": "die", "plural": "-n", "en": "washing machine", "example": null, "pos": "noun"}]}, {"name": "Umzug", "words": [{"de": "Anzeige", "article": "die", "plural": "-n", "en": "advertisement, listing", "example": null, "pos": "noun"}, {"de": "besichtigen", "article": null, "plural": null, "en": "to view, inspect", "example": null, "pos": "verb"}, {"de": "unterschreiben", "article": null, "plural": null, "en": "to sign", "example": "den Vertrag unterschreiben", "pos": "verb"}, {"de": "Vertrag", "article": "der", "plural": "¨e", "en": "contract", "example": null, "pos": "noun"}, {"de": "vermieten", "article": null, "plural": null, "en": "to rent out", "example": null, "pos": "verb"}, {"de": "mieten", "article": null, "plural": null, "en": "to rent", "example": null, "pos": "verb"}, {"de": "Miete", "article": "die", "plural": "-n", "en": "rent", "example": null, "pos": "noun"}, {"de": "Vermieter", "article": "der", "plural": "-", "en": "landlord", "example": null, "pos": "noun"}, {"de": "packen", "article": null, "plural": null, "en": "to pack", "example": null, "pos": "verb"}, {"de": "ziehen", "article": null, "plural": null, "en": "to move", "example": "in eine Wohnung ziehen", "pos": "verb"}, {"de": "umziehen", "article": null, "plural": null, "en": "to move (house)", "example": null, "pos": "verb"}, {"de": "Umzug", "article": "der", "plural": "¨e", "en": "move, relocation", "example": null, "pos": "noun"}, {"de": "stellen", "article": null, "plural": null, "en": "to put, place", "example": "Ich stelle den Schrank ins Bad.", "pos": "verb"}, {"de": "Feier", "article": "die", "plural": "-n", "en": "celebration, party", "example": null, "pos": "noun"}]}, {"name": "Ortsangaben", "words": [{"de": "hinter", "article": null, "plural": null, "en": "behind", "example": null, "pos": "prep"}, {"de": "neben", "article": null, "plural": null, "en": "next to", "example": null, "pos": "prep"}, {"de": "über", "article": null, "plural": null, "en": "above, over", "example": null, "pos": "prep"}, {"de": "unter", "article": null, "plural": null, "en": "under, below", "example": null, "pos": "prep"}, {"de": "zwischen", "article": null, "plural": null, "en": "between", "example": null, "pos": "prep"}]}, {"name": "Farben", "words": [{"de": "blau", "article": null, "plural": null, "en": "blue", "example": null, "pos": "adj"}, {"de": "braun", "article": null, "plural": null, "en": "brown", "example": null, "pos": "adj"}, {"de": "gelb", "article": null, "plural": null, "en": "yellow", "example": null, "pos": "adj"}, {"de": "grau", "article": null, "plural": null, "en": "gray", "example": null, "pos": "adj"}, {"de": "grün", "article": null, "plural": null, "en": "green", "example": null, "pos": "adj"}, {"de": "lila", "article": null, "plural": null, "en": "purple", "example": null, "pos": "adj"}, {"de": "orange", "article": null, "plural": null, "en": "orange", "example": null, "pos": "adj"}, {"de": "rot", "article": null, "plural": null, "en": "red", "example": null, "pos": "adj"}, {"de": "schwarz", "article": null, "plural": null, "en": "black", "example": null, "pos": "adj"}, {"de": "weiß", "article": null, "plural": null, "en": "white", "example": null, "pos": "adj"}]}, {"name": "andere wichtige Wörter und Wendungen", "words": [{"de": "schließen", "article": null, "plural": null, "en": "to close", "example": "Bitte schließ die Tür.", "pos": "verb"}, {"de": "bald", "article": null, "plural": null, "en": "soon", "example": null, "pos": "adv"}, {"de": "nie", "article": null, "plural": null, "en": "never", "example": null, "pos": "adv"}, {"de": "ein paar", "article": null, "plural": null, "en": "a few", "example": "ein paar Jahre", "pos": "phrase"}, {"de": "genau", "article": null, "plural": null, "en": "exact, exactly", "example": null, "pos": "adj"}, {"de": "hässlich", "article": null, "plural": null, "en": "ugly", "example": null, "pos": "adj"}, {"de": "jung", "article": null, "plural": null, "en": "young", "example": null, "pos": "adj"}, {"de": "zufrieden", "article": null, "plural": null, "en": "satisfied", "example": null, "pos": "adj"}, {"de": "besonders", "article": null, "plural": null, "en": "especially", "example": null, "pos": "adv"}, {"de": "positiv", "article": null, "plural": null, "en": "positive", "example": null, "pos": "adj"}, {"de": "negativ", "article": null, "plural": null, "en": "negative", "example": null, "pos": "adj"}, {"de": "oben", "article": null, "plural": null, "en": "above, upstairs", "example": null, "pos": "adv"}, {"de": "Blume", "article": "die", "plural": "-n", "en": "flower", "example": null, "pos": "noun"}, {"de": "Baum", "article": "der", "plural": "¨e", "en": "tree", "example": null, "pos": "noun"}, {"de": "Holz", "article": "das", "plural": "¨er", "en": "wood", "example": "Die Treppen sind aus Holz.", "pos": "noun"}, {"de": "Heft", "article": "das", "plural": "-e", "en": "notebook", "example": null, "pos": "noun"}, {"de": "Wunsch", "article": "der", "plural": "¨e", "en": "wish", "example": null, "pos": "noun"}, {"de": "Glückwunsch", "article": "der", "plural": "¨e", "en": "congratulations", "example": null, "pos": "noun"}, {"de": "nicht mehr", "article": null, "plural": null, "en": "not anymore", "example": null, "pos": "phrase"}, {"de": "zurzeit", "article": null, "plural": null, "en": "currently", "example": null, "pos": "adv"}]}]}, {"number": 11, "title": "Kleidung & Einkaufen", "accent": "#2E86AB", "categories": [{"name": "Kleidung", "words": [{"de": "Kleidung", "article": "die", "plural": "(Sg.)", "en": "clothing, clothes", "example": null, "pos": "noun"}, {"de": "Klamotten", "article": "die", "plural": "(Pl.)", "en": "clothes (informal)", "example": null, "pos": "noun"}, {"de": "Hose", "article": "die", "plural": "-n", "en": "pants, trousers", "example": null, "pos": "noun"}, {"de": "Jeans", "article": "die", "plural": "-", "en": "jeans", "example": null, "pos": "noun"}, {"de": "T-Shirt", "article": "das", "plural": "-s", "en": "T-shirt", "example": null, "pos": "noun"}, {"de": "Hemd", "article": "das", "plural": "-en", "en": "shirt", "example": null, "pos": "noun"}, {"de": "Pullover / Pulli", "article": "der", "plural": "- / -s", "en": "sweater", "example": null, "pos": "noun"}, {"de": "Sweatshirt", "article": "das", "plural": "-s", "en": "sweatshirt", "example": null, "pos": "noun"}, {"de": "Rock", "article": "der", "plural": "¨e", "en": "skirt", "example": null, "pos": "noun"}, {"de": "Bluse", "article": "die", "plural": "-n", "en": "blouse", "example": null, "pos": "noun"}, {"de": "Kleid", "article": "das", "plural": "-er", "en": "dress", "example": null, "pos": "noun"}, {"de": "Anzug", "article": "der", "plural": "¨e", "en": "suit", "example": null, "pos": "noun"}, {"de": "Krawatte", "article": "die", "plural": "-n", "en": "tie", "example": null, "pos": "noun"}, {"de": "Mantel", "article": "der", "plural": "¨", "en": "coat", "example": null, "pos": "noun"}, {"de": "Jacke", "article": "die", "plural": "-n", "en": "jacket", "example": null, "pos": "noun"}, {"de": "Schuh", "article": "der", "plural": "-e", "en": "shoe", "example": null, "pos": "noun"}, {"de": "Stiefel", "article": "der", "plural": "-", "en": "boot", "example": null, "pos": "noun"}, {"de": "Mütze", "article": "die", "plural": "-n", "en": "cap, beanie", "example": null, "pos": "noun"}, {"de": "Hut", "article": "der", "plural": "¨e", "en": "hat", "example": null, "pos": "noun"}, {"de": "Schal", "article": "der", "plural": "-s", "en": "scarf", "example": null, "pos": "noun"}, {"de": "Tuch", "article": "das", "plural": "¨er", "en": "cloth, shawl", "example": null, "pos": "noun"}, {"de": "Tasche", "article": "die", "plural": "-n", "en": "bag", "example": null, "pos": "noun"}, {"de": "Uhr", "article": "die", "plural": "-en", "en": "watch, clock", "example": null, "pos": "noun"}, {"de": "Schmuck", "article": "der", "plural": "(Sg.)", "en": "jewelry", "example": null, "pos": "noun"}]}, {"name": "Geschäfte", "words": [{"de": "Kleidergeschäft", "article": "das", "plural": "-e", "en": "clothing store", "example": null, "pos": "noun"}, {"de": "Kaufhaus", "article": "das", "plural": "¨er", "en": "department store", "example": null, "pos": "noun"}, {"de": "Laden", "article": "der", "plural": "¨", "en": "shop, store", "example": null, "pos": "noun"}, {"de": "Buchladen", "article": "der", "plural": "¨", "en": "bookstore", "example": null, "pos": "noun"}, {"de": "Secondhand-Laden", "article": "der", "plural": "¨", "en": "secondhand store", "example": null, "pos": "noun"}, {"de": "Shop", "article": "der", "plural": "-s", "en": "shop", "example": null, "pos": "noun"}, {"de": "shoppen", "article": null, "plural": null, "en": "to shop", "example": null, "pos": "verb"}, {"de": "Kasse", "article": "die", "plural": "-n", "en": "checkout, cash register", "example": null, "pos": "noun"}]}, {"name": "über Kleidung sprechen", "words": [{"de": "Mode", "article": "die", "plural": "-n", "en": "fashion", "example": null, "pos": "noun"}, {"de": "bequem", "article": null, "plural": null, "en": "comfortable", "example": null, "pos": "adj"}, {"de": "eng", "article": null, "plural": null, "en": "tight, narrow", "example": null, "pos": "adj"}, {"de": "weit", "article": null, "plural": null, "en": "wide, loose", "example": null, "pos": "adj"}, {"de": "kurz", "article": null, "plural": null, "en": "short", "example": null, "pos": "adj"}, {"de": "lang", "article": null, "plural": null, "en": "long", "example": null, "pos": "adj"}, {"de": "viel zu", "article": null, "plural": null, "en": "way too, much too", "example": "Die Hose ist viel zu weit.", "pos": "phrase"}, {"de": "besser", "article": null, "plural": null, "en": "better", "example": "Ich finde diese Jacke besser.", "pos": "adj"}, {"de": "kaputt", "article": null, "plural": null, "en": "broken", "example": null, "pos": "adj"}, {"de": "doof", "article": null, "plural": null, "en": "silly, dumb", "example": null, "pos": "adj"}, {"de": "also", "article": null, "plural": null, "en": "so, well", "example": "Also, ich finde den Anzug nicht schön.", "pos": "adv"}, {"de": "tragen", "article": null, "plural": null, "en": "to wear", "example": "er trägt, hat getragen — Sie trägt gern Jeans und T-Shirts.", "pos": "verb"}, {"de": "stehen", "article": null, "plural": null, "en": "to suit (clothing)", "example": "er steht, hat gestanden — Der Pulli steht ihr gut.", "pos": "verb"}, {"de": "gefallen", "article": null, "plural": null, "en": "to please, to like", "example": "er gefällt, hat gefallen — Die Jacke gefällt ihm nicht.", "pos": "verb"}, {"de": "passen", "article": null, "plural": null, "en": "to fit", "example": "Die Hose passt mir nicht.", "pos": "verb"}, {"de": "meinen", "article": null, "plural": null, "en": "to think, to mean (an opinion)", "example": null, "pos": "verb"}, {"de": "Was meinst du?", "article": null, "plural": null, "en": "What do you think?", "example": null, "pos": "phrase"}, {"de": "anziehen", "article": null, "plural": null, "en": "to put on", "example": "er zieht an, hat angezogen", "pos": "verb"}, {"de": "ausziehen", "article": null, "plural": null, "en": "to take off", "example": "er zieht aus, hat ausgezogen", "pos": "verb"}, {"de": "anprobieren", "article": null, "plural": null, "en": "to try on", "example": null, "pos": "verb"}, {"de": "empfehlen", "article": null, "plural": null, "en": "to recommend", "example": "er empfiehlt, hat empfohlen", "pos": "verb"}]}, {"name": "Kleidung online kaufen", "words": [{"de": "online", "article": null, "plural": null, "en": "online", "example": null, "pos": "adv"}, {"de": "entdecken", "article": null, "plural": null, "en": "to discover", "example": "Wo hast du die Jacke entdeckt?", "pos": "verb"}, {"de": "im Internet bestellen", "article": null, "plural": null, "en": "to order online", "example": null, "pos": "phrase"}, {"de": "kriegen", "article": null, "plural": null, "en": "to get, receive", "example": null, "pos": "verb"}, {"de": "ankommen", "article": null, "plural": null, "en": "to arrive", "example": "er kommt an, ist angekommen", "pos": "verb"}, {"de": "umtauschen", "article": null, "plural": null, "en": "to exchange", "example": null, "pos": "verb"}, {"de": "zurückschicken", "article": null, "plural": null, "en": "to send back", "example": null, "pos": "verb"}, {"de": "nerven", "article": null, "plural": null, "en": "to annoy", "example": "Das nervt.", "pos": "verb"}]}, {"name": "im Kaufhaus", "words": [{"de": "Produkt", "article": "das", "plural": "-e", "en": "product", "example": null, "pos": "noun"}, {"de": "Papier", "article": "das", "plural": "-e", "en": "paper", "example": null, "pos": "noun"}, {"de": "Kugelschreiber", "article": "der", "plural": "-", "en": "ballpoint pen", "example": null, "pos": "noun"}, {"de": "Bleistift", "article": "der", "plural": "-e", "en": "pencil", "example": null, "pos": "noun"}, {"de": "Zeitschrift", "article": "die", "plural": "-en", "en": "magazine", "example": null, "pos": "noun"}, {"de": "Kosmetik", "article": "die", "plural": "(Sg.)", "en": "cosmetics", "example": null, "pos": "noun"}, {"de": "Parfüm", "article": "das", "plural": "-e/-s", "en": "perfume", "example": null, "pos": "noun"}, {"de": "Duschgel", "article": "das", "plural": "-s", "en": "shower gel", "example": null, "pos": "noun"}, {"de": "Kamera", "article": "die", "plural": "-s", "en": "camera", "example": null, "pos": "noun"}, {"de": "USB-Stick", "article": "der", "plural": "-s", "en": "USB stick, flash drive", "example": null, "pos": "noun"}, {"de": "Haushalt", "article": "der", "plural": "-e", "en": "household", "example": null, "pos": "noun"}, {"de": "praktisch", "article": null, "plural": null, "en": "practical", "example": null, "pos": "adj"}, {"de": "Untergeschoss", "article": "das", "plural": "-e", "en": "basement level", "example": null, "pos": "noun"}]}, {"name": "Öffnungszeiten", "words": [{"de": "Öffnungszeiten", "article": "die", "plural": "(Pl.)", "en": "opening hours", "example": null, "pos": "noun"}, {"de": "öffnen", "article": null, "plural": null, "en": "to open", "example": null, "pos": "verb"}, {"de": "schließen", "article": null, "plural": null, "en": "to close", "example": "er schließt, hat geschlossen", "pos": "verb"}, {"de": "täglich geöffnet von ... bis ...", "article": null, "plural": null, "en": "open daily from ... to ...", "example": null, "pos": "phrase"}, {"de": "Von ... bis ... ist das Café geschlossen.", "article": null, "plural": null, "en": "From ... to ... the café is closed.", "example": null, "pos": "phrase"}, {"de": "auf sein", "article": null, "plural": null, "en": "to be open", "example": "Das Geschäft ist auf.", "pos": "phrase"}, {"de": "zu sein", "article": null, "plural": null, "en": "to be closed", "example": "Der Laden ist zu.", "pos": "phrase"}, {"de": "zuhaben", "article": null, "plural": null, "en": "to be closed (colloquial)", "example": "er hat zu, hat zugehabt", "pos": "verb"}, {"de": "Schild", "article": "das", "plural": "-er", "en": "sign", "example": null, "pos": "noun"}]}, {"name": "Trendstadt Berlin", "words": [{"de": "Hauptstadt", "article": "die", "plural": "¨e", "en": "capital city", "example": null, "pos": "noun"}, {"de": "Design", "article": "das", "plural": "-s", "en": "design", "example": null, "pos": "noun"}, {"de": "(top)aktuell", "article": null, "plural": null, "en": "(extremely) current, trendy", "example": null, "pos": "adj"}, {"de": "kreativ", "article": null, "plural": null, "en": "creative", "example": null, "pos": "adj"}, {"de": "originell", "article": null, "plural": null, "en": "original, inventive", "example": null, "pos": "adj"}, {"de": "attraktiv", "article": null, "plural": null, "en": "attractive", "example": null, "pos": "adj"}, {"de": "Architektur", "article": "die", "plural": "(Sg.)", "en": "architecture", "example": null, "pos": "noun"}, {"de": "Souvenir", "article": "das", "plural": "-s", "en": "souvenir", "example": null, "pos": "noun"}, {"de": "Erfindung", "article": "die", "plural": "-en", "en": "invention", "example": null, "pos": "noun"}]}, {"name": "andere wichtige Wörter und Wendungen", "words": [{"de": "Sache", "article": "die", "plural": "-n", "en": "thing", "example": null, "pos": "noun"}, {"de": "Hof", "article": "der", "plural": "¨e", "en": "courtyard, yard", "example": null, "pos": "noun"}, {"de": "Jugendliche", "article": "der/die", "plural": "-n", "en": "teenager, young person", "example": null, "pos": "noun"}, {"de": "ausgehen", "article": null, "plural": null, "en": "to go out", "example": "er geht aus, ist ausgegangen", "pos": "verb"}, {"de": "fernsehen", "article": null, "plural": null, "en": "to watch TV", "example": "er sieht fern, hat ferngesehen", "pos": "verb"}, {"de": "einfach", "article": null, "plural": null, "en": "simply", "example": "Mir gefällt einfach alles.", "pos": "adv"}, {"de": "Ich danke Ihnen.", "article": null, "plural": null, "en": "Thank you (formal).", "example": null, "pos": "phrase"}, {"de": "auf jeden Fall", "article": null, "plural": null, "en": "in any case, definitely", "example": null, "pos": "phrase"}, {"de": "Quatsch!", "article": null, "plural": null, "en": "Nonsense!", "example": null, "pos": "phrase"}, {"de": "böse", "article": null, "plural": null, "en": "angry, mean", "example": null, "pos": "adj"}, {"de": "gleich", "article": null, "plural": null, "en": "same, similar", "example": "Was ist ähnlich oder gleich?", "pos": "adj"}, {"de": "vorgestern", "article": null, "plural": null, "en": "the day before yesterday", "example": null, "pos": "adv"}, {"de": "ohne", "article": null, "plural": null, "en": "without", "example": "Ohne Hut gefällt er mir besser.", "pos": "prep"}]}]}, {"number": 12, "title": "Urlaub & Reisen", "accent": "#3F8F5F", "categories": [{"name": "Urlaub", "words": [{"de": "Badeurlaub", "article": "der", "plural": "-e", "en": "beach holiday", "example": null, "pos": "noun"}, {"de": "Campingurlaub", "article": "der", "plural": "-e", "en": "camping holiday", "example": null, "pos": "noun"}, {"de": "Stadturlaub", "article": "der", "plural": "-e", "en": "city break", "example": null, "pos": "noun"}, {"de": "Berg", "article": "der", "plural": "-e", "en": "mountain", "example": null, "pos": "noun"}, {"de": "Insel", "article": "die", "plural": "-n", "en": "island", "example": null, "pos": "noun"}, {"de": "Sehenswürdigkeit", "article": "die", "plural": "-en", "en": "sight, attraction", "example": null, "pos": "noun"}, {"de": "Stadtführung", "article": "die", "plural": "-en", "en": "city tour", "example": null, "pos": "noun"}, {"de": "Strand", "article": "der", "plural": "¨e", "en": "beach", "example": null, "pos": "noun"}, {"de": "Zoo", "article": "der", "plural": "-s", "en": "zoo", "example": null, "pos": "noun"}, {"de": "Postkarte", "article": "die", "plural": "-n", "en": "postcard", "example": null, "pos": "noun"}, {"de": "Karte", "article": "die", "plural": "-n", "en": "card, ticket", "example": "Kann ich mit Karte zahlen?", "pos": "noun"}, {"de": "übernachten", "article": null, "plural": null, "en": "to stay overnight", "example": null, "pos": "verb"}]}, {"name": "Koffer packen", "words": [{"de": "einpacken", "article": null, "plural": null, "en": "to pack", "example": null, "pos": "verb"}, {"de": "Gepäck", "article": "das", "plural": "(Sg.)", "en": "luggage", "example": null, "pos": "noun"}, {"de": "Reisetasche", "article": "die", "plural": "-n", "en": "travel bag", "example": null, "pos": "noun"}, {"de": "Badeanzug", "article": "der", "plural": "¨e", "en": "swimsuit", "example": null, "pos": "noun"}, {"de": "Badehose", "article": "die", "plural": "-n", "en": "swim trunks", "example": null, "pos": "noun"}, {"de": "Bikini", "article": "der", "plural": "-s", "en": "bikini", "example": null, "pos": "noun"}, {"de": "Regenjacke", "article": "die", "plural": "-n", "en": "rain jacket", "example": null, "pos": "noun"}, {"de": "Regenschirm", "article": "der", "plural": "-e", "en": "umbrella", "example": null, "pos": "noun"}, {"de": "Reiseführer", "article": "der", "plural": "-", "en": "travel guide(book)", "example": null, "pos": "noun"}, {"de": "Seife", "article": "die", "plural": "-n", "en": "soap", "example": null, "pos": "noun"}, {"de": "Sonnenbrille", "article": "die", "plural": "-n", "en": "sunglasses", "example": null, "pos": "noun"}, {"de": "Sonnencreme", "article": "die", "plural": "-s", "en": "sunscreen", "example": null, "pos": "noun"}, {"de": "Geschirr", "article": "das", "plural": "(Sg.)", "en": "dishes, crockery", "example": null, "pos": "noun"}, {"de": "Schlafsack", "article": "der", "plural": "¨e", "en": "sleeping bag", "example": null, "pos": "noun"}, {"de": "Zelt", "article": "das", "plural": "-e", "en": "tent", "example": null, "pos": "noun"}]}, {"name": "Im Hotel", "words": [{"de": "Anmeldung", "article": "die", "plural": "-en", "en": "registration, check-in", "example": null, "pos": "noun"}, {"de": "Ausweis", "article": "der", "plural": "-e", "en": "ID card", "example": null, "pos": "noun"}, {"de": "Papiere", "article": "die", "plural": "(Pl.)", "en": "documents, papers", "example": null, "pos": "noun"}, {"de": "Pass", "article": "der", "plural": "¨e", "en": "passport", "example": null, "pos": "noun"}, {"de": "Doppelzimmer", "article": "das", "plural": "-", "en": "double room", "example": null, "pos": "noun"}, {"de": "Einzelzimmer", "article": "das", "plural": "-", "en": "single room", "example": null, "pos": "noun"}, {"de": "reservieren", "article": null, "plural": null, "en": "to reserve", "example": null, "pos": "verb"}, {"de": "Rezeption", "article": "die", "plural": "-en", "en": "reception", "example": null, "pos": "noun"}, {"de": "Jugendherberge", "article": "die", "plural": "-n", "en": "youth hostel", "example": null, "pos": "noun"}, {"de": "Pension", "article": "die", "plural": "-en", "en": "guesthouse, B&B", "example": null, "pos": "noun"}]}, {"name": "unterwegs", "words": [{"de": "Reise", "article": "die", "plural": "-n", "en": "trip, journey", "example": null, "pos": "noun"}, {"de": "Flug", "article": "der", "plural": "¨e", "en": "flight", "example": null, "pos": "noun"}, {"de": "Flughafen", "article": "der", "plural": "¨", "en": "airport", "example": null, "pos": "noun"}, {"de": "Bahnsteig", "article": "der", "plural": "-e", "en": "platform", "example": null, "pos": "noun"}, {"de": "Gleis", "article": "das", "plural": "-e", "en": "track", "example": null, "pos": "noun"}, {"de": "Haltestelle", "article": "die", "plural": "-n", "en": "stop (bus/tram)", "example": null, "pos": "noun"}, {"de": "einsteigen", "article": null, "plural": null, "en": "to get on, board", "example": "er steigt ein, ist eingestiegen", "pos": "verb"}, {"de": "umsteigen", "article": null, "plural": null, "en": "to change, transfer", "example": "er steigt um, ist umgestiegen", "pos": "verb"}, {"de": "aussteigen", "article": null, "plural": null, "en": "to get off", "example": "er steigt aus, ist ausgestiegen", "pos": "verb"}, {"de": "abfahren", "article": null, "plural": null, "en": "to depart", "example": "er fährt ab, ist abgefahren", "pos": "verb"}, {"de": "zurückfahren", "article": null, "plural": null, "en": "to go back, drive back", "example": "er fährt zurück, ist zurückgefahren", "pos": "verb"}, {"de": "verpassen", "article": null, "plural": null, "en": "to miss (a train, etc.)", "example": null, "pos": "verb"}, {"de": "Abfahrt", "article": "die", "plural": "-en", "en": "departure", "example": null, "pos": "noun"}, {"de": "Ankunft", "article": "die", "plural": "¨e", "en": "arrival", "example": null, "pos": "noun"}, {"de": "Nummer", "article": "die", "plural": "-n", "en": "number", "example": null, "pos": "noun"}, {"de": "benutzen", "article": null, "plural": null, "en": "to use", "example": null, "pos": "verb"}, {"de": "alle", "article": null, "plural": null, "en": "every (interval)", "example": "Die S-Bahn fährt alle 10 Minuten.", "pos": "adv"}, {"de": "Ausgang", "article": "der", "plural": "¨e", "en": "exit", "example": null, "pos": "noun"}, {"de": "Platz", "article": "der", "plural": "¨e", "en": "square, seat", "example": "Am Marktplatz steigen Sie aus.", "pos": "noun"}, {"de": "Ecke", "article": "die", "plural": "-n", "en": "corner", "example": null, "pos": "noun"}, {"de": "liegen", "article": null, "plural": null, "en": "to be located", "example": "er liegt, hat gelegen — Wo liegt Zürich?", "pos": "verb"}, {"de": "außerhalb", "article": null, "plural": null, "en": "outside (of)", "example": null, "pos": "prep"}, {"de": "etwas", "article": null, "plural": null, "en": "somewhat", "example": "Das Hotel liegt etwas außerhalb.", "pos": "adv"}, {"de": "gegenüber", "article": null, "plural": null, "en": "across from, opposite", "example": null, "pos": "prep"}]}, {"name": "Wetter", "words": [{"de": "Sonne", "article": "die", "plural": "(Sg.)", "en": "sun", "example": null, "pos": "noun"}, {"de": "sonnig", "article": null, "plural": null, "en": "sunny", "example": null, "pos": "adj"}, {"de": "scheinen", "article": null, "plural": null, "en": "to shine", "example": "er scheint, hat geschienen", "pos": "verb"}, {"de": "Hitze", "article": "die", "plural": "(Sg.)", "en": "heat", "example": null, "pos": "noun"}, {"de": "Wolke", "article": "die", "plural": "-n", "en": "cloud", "example": null, "pos": "noun"}, {"de": "bewölkt", "article": null, "plural": null, "en": "cloudy", "example": null, "pos": "adj"}, {"de": "Regen", "article": "der", "plural": "(Sg.)", "en": "rain", "example": null, "pos": "noun"}, {"de": "regnen", "article": null, "plural": null, "en": "to rain", "example": "Es regnet.", "pos": "verb"}, {"de": "Schnee", "article": "der", "plural": "(Sg.)", "en": "snow", "example": null, "pos": "noun"}, {"de": "schneien", "article": null, "plural": null, "en": "to snow", "example": "Es schneit.", "pos": "verb"}, {"de": "... Grad minus/plus", "article": null, "plural": null, "en": "... degrees below/above zero", "example": null, "pos": "phrase"}, {"de": "Wind", "article": "der", "plural": "-e", "en": "wind", "example": null, "pos": "noun"}, {"de": "windig", "article": null, "plural": null, "en": "windy", "example": null, "pos": "adj"}, {"de": "Wetterbericht", "article": "der", "plural": "-e", "en": "weather report", "example": null, "pos": "noun"}]}, {"name": "Himmelsrichtungen", "words": [{"de": "Himmelsrichtung", "article": "die", "plural": "-en", "en": "cardinal direction", "example": null, "pos": "noun"}, {"de": "Norden", "article": "der", "plural": "(Sg.)", "en": "north", "example": null, "pos": "noun"}, {"de": "Osten", "article": "der", "plural": "(Sg.)", "en": "east", "example": null, "pos": "noun"}, {"de": "Süden", "article": "der", "plural": "(Sg.)", "en": "south", "example": null, "pos": "noun"}, {"de": "Westen", "article": "der", "plural": "(Sg.)", "en": "west", "example": null, "pos": "noun"}]}, {"name": "andere wichtige Wörter und Wendungen", "words": [{"de": "denn", "article": null, "plural": null, "en": "because", "example": "Zürich ist toll, denn man kann hier viel machen.", "pos": "conj"}, {"de": "erst", "article": null, "plural": null, "en": "only, not until", "example": null, "pos": "adv"}, {"de": "zum Schluss", "article": null, "plural": null, "en": "finally, in the end", "example": null, "pos": "phrase"}, {"de": "unten", "article": null, "plural": null, "en": "below, downstairs", "example": null, "pos": "adv"}, {"de": "vorne", "article": null, "plural": null, "en": "in front", "example": null, "pos": "adv"}, {"de": "Kultur", "article": "die", "plural": "(Sg.)", "en": "culture", "example": null, "pos": "noun"}, {"de": "Kunst", "article": "die", "plural": "¨e", "en": "art", "example": null, "pos": "noun"}, {"de": "Landschaft", "article": "die", "plural": "-en", "en": "landscape", "example": null, "pos": "noun"}, {"de": "Dorf", "article": "das", "plural": "¨er", "en": "village", "example": null, "pos": "noun"}, {"de": "spazieren gehen", "article": null, "plural": null, "en": "to go for a walk", "example": "er geht spazieren, ist spazieren gegangen", "pos": "verb"}, {"de": "gehören", "article": null, "plural": null, "en": "to belong to", "example": "Wem gehören die Sachen?", "pos": "verb"}, {"de": "sauber", "article": null, "plural": null, "en": "clean", "example": null, "pos": "adj"}, {"de": "froh", "article": null, "plural": null, "en": "glad, happy", "example": null, "pos": "adj"}, {"de": "wunderbar", "article": null, "plural": null, "en": "wonderful", "example": null, "pos": "adj"}, {"de": "Traum", "article": "der", "plural": "¨e", "en": "dream", "example": null, "pos": "noun"}, {"de": "Bekannte", "article": "der/die", "plural": "-n", "en": "acquaintance", "example": null, "pos": "noun"}, {"de": "Tante", "article": "die", "plural": "-n", "en": "aunt", "example": null, "pos": "noun"}, {"de": "Auskunft geben", "article": null, "plural": null, "en": "to give information", "example": null, "pos": "phrase"}, {"de": "Vorschlag", "article": "der", "plural": "¨e", "en": "suggestion", "example": null, "pos": "noun"}, {"de": "wecken", "article": null, "plural": null, "en": "to wake (someone) up", "example": null, "pos": "verb"}, {"de": "wünschen", "article": null, "plural": null, "en": "to wish", "example": null, "pos": "verb"}]}]}]};
+</script>
+<script>
+(function(){
+  "use strict";
+
+  // ---------- flatten data ----------
+  const allCards = [];
+  VOCAB_DATA.chapters.forEach(ch => {
+    ch.categories.forEach(cat => {
+      cat.words.forEach(word => {
+        allCards.push({
+          id: `${ch.number}-${cat.name}-${word.de}`,
+          chapter: ch.number,
+          chapterTitle: ch.title,
+          accent: ch.accent,
+          category: cat.name,
+          ...word
+        });
+      });
+    });
+  });
+
+  // ---------- state ----------
+  const STORAGE_KEY = "wortschatzkasten_progress_v1";
+  let progress = {}; // id -> 'know' | 'again'
+  try{
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved) progress = JSON.parse(saved);
+  }catch(e){ progress = {}; }
+
+  function saveProgress(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }catch(e){}
+  }
+
+  let state = {
+    chapterFilter: "all",
+    categoryFilter: "all",
+    direction: "de-en", // or 'en-de'
+    mode: "translate", // 'translate' or 'article'
+    deck: [],
+    index: 0,
+    flipped: false,
+  };
+
+  function isPureNoun(c){
+    return c.article === "der" || c.article === "die" || c.article === "das";
+  }
+
+  // ---------- DOM ----------
+  const els = {
+    tabsContainer: document.getElementById("chapterTabs"),
+    modeTranslate: document.getElementById("mode-translate"),
+    modeArticle: document.getElementById("mode-article"),
+    categorySelect: document.getElementById("categorySelect"),
+    shuffleBtn: document.getElementById("shuffleBtn"),
+    dirBtn: document.getElementById("dirBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    subtitle: document.getElementById("subtitle"),
+    stage: document.getElementById("stage"),
+    cardFrame: document.getElementById("cardFrame"),
+    card: document.getElementById("card"),
+    pin: document.getElementById("pin"),
+    tabFlapFront: document.getElementById("tabFlapFront"),
+    tabFlapBack: document.getElementById("tabFlapBack"),
+    catLabelFront: document.getElementById("catLabelFront"),
+    catLabelBack: document.getElementById("catLabelBack"),
+    frontWrap: document.getElementById("frontWrap"),
+    backWrap: document.getElementById("backWrap"),
+    againBtn: document.getElementById("againBtn"),
+    knowBtn: document.getElementById("knowBtn"),
+    progressLabel: document.getElementById("progressLabel"),
+    progressFill: document.getElementById("progressFill"),
+    progressPct: document.getElementById("progressPct"),
+    knowCount: document.getElementById("knowCount"),
+    learnCount: document.getElementById("learnCount"),
+  };
+
+  function articleClass(article){
+    if(!article) return "dd";
+    if(article.startsWith("der")) return "der";
+    if(article.startsWith("die")) return "die";
+    if(article.startsWith("das")) return "das";
+    return "dd";
+  }
+
+  function buildCategoryOptions(){
+    const chNum = state.chapterFilter;
+    const cats = new Set();
+    VOCAB_DATA.chapters.forEach(ch => {
+      if(chNum !== "all" && String(ch.number) !== String(chNum)) return;
+      ch.categories.forEach(cat => {
+        const words = state.mode === "article" ? cat.words.filter(isPureNoun) : cat.words;
+        if(words.length > 0) cats.add(cat.name);
+      });
+    });
+    els.categorySelect.innerHTML = '<option value="all">Alle Kategorien</option>' +
+      Array.from(cats).map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join("");
+    if(Array.from(cats).includes(state.categoryFilter)){
+      els.categorySelect.value = state.categoryFilter;
+    } else {
+      state.categoryFilter = "all";
+      els.categorySelect.value = "all";
+    }
+  }
+
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  function buildDeck(){
+    let filtered = allCards.filter(c => {
+      if(state.chapterFilter !== "all" && String(c.chapter) !== String(state.chapterFilter)) return false;
+      if(state.categoryFilter !== "all" && c.category !== state.categoryFilter) return false;
+      if(state.mode === "article" && !isPureNoun(c)) return false;
+      return true;
+    });
+    state.deck = filtered;
+    state.index = 0;
+    state.flipped = false;
+  }
+
+  function shuffleDeck(){
+    for(let i = state.deck.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i+1));
+      [state.deck[i], state.deck[j]] = [state.deck[j], state.deck[i]];
+    }
+    state.index = 0;
+    state.flipped = false;
+    render();
+  }
+
+  function setAccent(hex){
+    document.documentElement.style.setProperty("--accent", hex);
+    // derive a darker shade roughly
+    document.documentElement.style.setProperty("--accent-dark", shade(hex, -0.28));
+  }
+
+  function shade(hex, amt){
+    const num = parseInt(hex.slice(1), 16);
+    let r = (num >> 16) + Math.round(255*amt);
+    let g = ((num >> 8) & 0x00FF) + Math.round(255*amt);
+    let b = (num & 0x0000FF) + Math.round(255*amt);
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+    return "#" + (0x1000000 + r*0x10000 + g*0x100 + b).toString(16).slice(1);
+  }
+
+  function currentCard(){
+    return state.deck[state.index];
+  }
+
+  function render(){
+    updateTally();
+    if(state.deck.length === 0){
+      renderEmpty();
+      return;
+    }
+    els.stage.querySelectorAll(".empty-state").forEach(n => n.remove());
+    els.cardFrame.style.display = "";
+    document.querySelector(".rate-row").style.display = "";
+    document.querySelector(".progress-row").style.display = "";
+
+    const c = currentCard();
+    setAccent(c.accent);
+    els.card.classList.remove("flipped");
+    state.flipped = false;
+    // slight deterministic tilt per card for physical feel
+    const tilt = ((c.id.length * 37) % 5) - 2.2;
+    els.card.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
+
+    els.tabFlapFront.textContent = c.chapter;
+    els.tabFlapBack.textContent = c.chapter;
+    els.catLabelFront.textContent = c.category;
+    els.catLabelBack.textContent = c.category;
+
+    const isDeEn = state.direction === "de-en";
+    let frontHtml = "";
+    let backHtml = "";
+
+    if(state.mode === "article"){
+      // ARTICLE TRAINING: front shows the bare noun, back reveals article + plural
+      frontHtml += `<div class="pos-label">Welcher Artikel?</div>`;
+      frontHtml += `<div class="german-word">${escapeHtml(c.de)}</div>`;
+      els.frontWrap.innerHTML = frontHtml;
+
+      backHtml += `<div class="article-reveal-row">`;
+      backHtml += `<span class="article big ${articleClass(c.article)}">${escapeHtml(c.article)}</span>`;
+      backHtml += `<span class="german-word" style="font-size:24px;">${escapeHtml(c.de)}</span>`;
+      backHtml += `</div>`;
+      if(c.plural){
+        backHtml += `<div class="plural-tag">Plural: die ${escapeHtml(pluralDisplay(c))}</div>`;
+      }
+      backHtml += `<div class="noun-gloss">${escapeHtml(c.en)}</div>`;
+      els.backWrap.innerHTML = backHtml;
+    } else if(isDeEn){
+      frontHtml += `<div class="article-row">`;
+      if(c.article){
+        frontHtml += `<span class="article ${articleClass(c.article)}">${escapeHtml(c.article)}</span>`;
+      } else if(c.pos){
+        frontHtml += `<span class="pos-label">${escapeHtml(c.pos)}</span>`;
+      }
+      frontHtml += `</div>`;
+      frontHtml += `<div class="german-word">${escapeHtml(c.de)}</div>`;
+      if(c.plural){
+        frontHtml += `<div class="plural-tag">Plural: ${escapeHtml(pluralDisplay(c))}</div>`;
+      }
+      els.frontWrap.innerHTML = frontHtml;
+
+      backHtml += `<div class="english-word">${escapeHtml(c.en)}</div>`;
+      if(c.example){
+        backHtml += `<div class="example-back"><span class="lbl">Beispiel</span>${escapeHtml(c.example)}</div>`;
+      }
+      els.backWrap.innerHTML = backHtml;
+    } else {
+      frontHtml += `<div class="english-word">${escapeHtml(c.en)}</div>`;
+      els.frontWrap.innerHTML = frontHtml;
+
+      backHtml += `<div class="article-row">`;
+      if(c.article){
+        backHtml += `<span class="article ${articleClass(c.article)}">${escapeHtml(c.article)}</span>`;
+      } else if(c.pos){
+        backHtml += `<span class="pos-label">${escapeHtml(c.pos)}</span>`;
+      }
+      backHtml += `</div>`;
+      backHtml += `<div class="german-word">${escapeHtml(c.de)}</div>`;
+      if(c.plural){
+        backHtml += `<div class="plural-tag">Plural: ${escapeHtml(pluralDisplay(c))}</div>`;
+      }
+      if(c.example){
+        backHtml += `<div class="example-back"><span class="lbl">Beispiel</span>${escapeHtml(c.example)}</div>`;
+      }
+      els.backWrap.innerHTML = backHtml;
+    }
+
+    els.progressLabel.textContent = `${state.index + 1} / ${state.deck.length}`;
+    const doneCount = state.deck.filter(cc => progress[cc.id]).length;
+    const pct = Math.round((doneCount / state.deck.length) * 100);
+    els.progressFill.style.width = pct + "%";
+    els.progressPct.textContent = pct + "%";
+
+    const modeLabel = state.mode === "article" ? "Artikel-Training" : "Karteikarten";
+    const allChapterNums = VOCAB_DATA.chapters.map(ch => ch.number).join(" & ");
+    els.subtitle.textContent = `${state.deck.length} Karten · ${state.chapterFilter === "all" ? "Kapitel " + allChapterNums : "Kapitel " + state.chapterFilter} · ${modeLabel}`;
+  }
+
+  function pluralDisplay(c){
+    if(!c.plural) return "";
+    if(c.plural.startsWith("(")) return c.plural;
+    if(c.plural.startsWith("¨")) return "⁠" + c.plural; // umlaut plural marker kept as-is
+    return c.plural;
+  }
+
+  function renderEmpty(){
+    els.cardFrame.style.display = "none";
+    document.querySelector(".rate-row").style.display = "none";
+    document.querySelector(".progress-row").style.display = "none";
+    if(!els.stage.querySelector(".empty-state")){
+      const div = document.createElement("div");
+      div.className = "empty-state";
+      div.innerHTML = `<h2>Keine Karten gefunden</h2><p>Für diese Auswahl gibt es keine Wörter. Wähle eine andere Kategorie.</p>`;
+      els.stage.insertBefore(div, els.stage.firstChild);
+    }
+  }
+
+  function updateTally(){
+    const know = Object.values(progress).filter(v => v === "know").length;
+    const again = Object.values(progress).filter(v => v === "again").length;
+    els.knowCount.textContent = know;
+    els.learnCount.textContent = again;
+  }
+
+  function flipCard(){
+    if(state.deck.length === 0) return;
+    state.flipped = !state.flipped;
+    els.card.classList.toggle("flipped", state.flipped);
+  }
+
+  function nextCard(rating){
+    const c = currentCard();
+    if(c){
+      progress[c.id] = rating;
+      saveProgress();
+    }
+    if(state.index < state.deck.length - 1){
+      state.index++;
+    } else {
+      state.index = 0;
+    }
+    render();
+  }
+
+  // ---------- events ----------
+  els.card.addEventListener("click", flipCard);
+  els.card.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); flipCard(); }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "ArrowRight"){ nextCard(progress[currentCard()?.id] || "again"); }
+    if(e.key === "1"){ nextCard("again"); }
+    if(e.key === "2"){ nextCard("know"); }
+  });
+
+  els.againBtn.addEventListener("click", () => nextCard("again"));
+  els.knowBtn.addEventListener("click", () => nextCard("know"));
+
+  els.shuffleBtn.addEventListener("click", shuffleDeck);
+
+  els.dirBtn.addEventListener("click", () => {
+    state.direction = state.direction === "de-en" ? "en-de" : "de-en";
+    els.dirBtn.textContent = state.direction === "de-en" ? "DE → EN" : "EN → DE";
+    render();
+  });
+
+  els.resetBtn.addEventListener("click", () => {
+    if(confirm("Fortschritt für alle Karten zurücksetzen?")){
+      progress = {};
+      saveProgress();
+      render();
+    }
+  });
+
+  function setMode(mode){
+    state.mode = mode;
+    els.modeTranslate.classList.toggle("active", mode === "translate");
+    els.modeArticle.classList.toggle("active", mode === "article");
+    els.dirBtn.style.display = mode === "article" ? "none" : "";
+    buildCategoryOptions();
+    buildDeck();
+    render();
+  }
+
+  els.modeTranslate.addEventListener("click", () => setMode("translate"));
+  els.modeArticle.addEventListener("click", () => setMode("article"));
+
+  function setChapter(ch){
+    state.chapterFilter = ch;
+    els.tabsContainer.querySelectorAll(".chapter-tab").forEach(b => {
+      b.classList.toggle("active", b.dataset.ch === String(ch));
+    });
+    buildCategoryOptions();
+    buildDeck();
+    render();
+  }
+
+  function renderChapterTabs(){
+    let html = `<button class="chapter-tab active" data-ch="all">ALLE</button>`;
+    VOCAB_DATA.chapters.forEach(ch => {
+      const dark = shade(ch.accent, -0.32);
+      html += `<button class="chapter-tab" data-ch="${ch.number}" style="background:linear-gradient(160deg, ${ch.accent}, ${dark})">${ch.number}</button>`;
+    });
+    els.tabsContainer.innerHTML = html;
+    els.tabsContainer.querySelectorAll(".chapter-tab").forEach(btn => {
+      btn.addEventListener("click", () => setChapter(btn.dataset.ch));
+    });
+  }
+
+  els.categorySelect.addEventListener("change", (e) => {
+    state.categoryFilter = e.target.value;
+    buildDeck();
+    render();
+  });
+
+  // ---------- init ----------
+  renderChapterTabs();
+  buildCategoryOptions();
+  buildDeck();
+  render();
+})();
+</script>
+</body>
+</html>
